@@ -1,2 +1,3 @@
-# blog.galeo.me
+# galeo's blog
+
 galeo's personal blog. See http://blog.galeo.me
