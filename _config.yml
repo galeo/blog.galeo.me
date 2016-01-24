@@ -15,7 +15,7 @@ tagline:          In the morning after, you begin to see the light.
 url:              'http://blog.galeo.me'
 paginate:         7
 
-baseurl:          /blog.galeo.me/
+baseurl:          /
 author:
   name:           Moogen Tian
   url:            https://github.com/galeo
