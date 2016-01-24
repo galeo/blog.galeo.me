@@ -1,2 +1,4 @@
-jekyll/_site
-jekyll/Gemfile.lock
+_site
+Gemfile.lock
+
+*.org
