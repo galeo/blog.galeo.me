@@ -1,0 +1,42 @@
+##########
+### Start
+##########
+
+# Dependencies
+markdown:         redcarpet
+# highlighter:      pygments
+
+# Permalinks
+permalink:        none
+
+# Setup
+title:            "galeo's blog"
+tagline:          In the morning after, you begin to see the light.
+url:              'http://blog.galeo.me'
+paginate:         7
+
+baseurl:          /
+author:
+  name:           Moogen Tian
+  url:            https://github.com/galeo
+  email:          moogentian[at]gmail.com
+
+# Content
+excerpt_separator: "</p>"
+timezone:         UTC
+future:           false
+
+# Related pages
+related:
+  excluded_tags:  ['emacs']
+  max_number:     3
+
+pages_list:
+  Home: ['http://galeo.me/']
+  Blog: ['/index.html']
+  Archive: ['/archive.html']
+  Tags: ['/tags.html']
+  About: ['/about.html']
+
+gems:
+  - jekyll-sitemap

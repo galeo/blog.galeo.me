@@ -1,0 +1,37 @@
+{% capture meta_icon %}{{ site.url }}/favicon.png{% endcapture %}
+
+<!-- Home and similar  -->
+{% if page.isPost %}
+  {% if page.meta_title %}
+    {% assign meta_title = page.meta_title %}
+  {% else %}
+    {% capture meta_title %}
+      {{ page.title }} &middot; {{ site.title }}
+    {% endcapture %}
+  {% endif %}
+
+  {% capture meta_url %}
+    {{ site.url }}{{ page.url }}
+  {% endcapture %}
+
+  {% if (page.description == nil || page.description == "") %}
+    {% capture meta_description %}
+      {{ page.excerpt | strip_html | truncate: 400 | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '  ', ' ' | replace: '"', '' | replace: '  ', ' ' }}
+    {% endcapture %}
+  {% else %}
+    {% capture meta_description %}{{ page.description }}{% endcapture %}
+  {% endif %}
+{% else %} <!-- Other pages -->
+  {% capture meta_title %}
+    {{ page.title }} &middot; {{ site.title }}
+  {% endcapture %}
+
+  {% assign meta_description = "galeo's personal blog. Focus on Mac OS X, Emacs, Python, Lisp, WebFrontend and more." %}
+  {% capture meta_url %}
+    {{ site.url }}
+  {% endcapture %}
+{% endif %}
+
+<title>{{ meta_title }}</title>
+<meta name="description" content="{{ meta_description }}">
+<meta name="keywords" content="Emacs, {{ page.tags | join: ', ' }}, CommonLisp" />

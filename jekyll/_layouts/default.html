@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  {% include head.html %}
+
+  <body>
+    <div class="container content">
+
+      <div class="header">
+        <h1 class="title">
+          <a href="{{ site.url }}" title="Home">{{ site.title }}</a>
+        </h1>
+        <p class="tagline">{{ site.tagline }}</p>
+
+        <div class="navbar">
+          <ul class="navbar-nav">
+            {% for node in site.pages_list %}
+              <li>
+                {% if page.url == node[1][0] %}
+                  <a href="{{ node[1][0] }}" class="active">
+                    <span class="link-name">{{node[0]}}</span>
+                  </a>
+                {% else %}
+                  <a href="{{ node[1][0] }}">
+                    <span class="link-name">{{node[0]}}</span>
+                  </a>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <div class="main">
+        {{ content }}
+        {% include copyright.html %}
+      </div>
+    </div>
+  </body>
+</html>

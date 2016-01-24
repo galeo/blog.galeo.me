@@ -1,0 +1,27 @@
+---
+layout: default
+isPost: true
+---
+
+<div class="post">
+  <h1 class="post-title">{{ page.title }}</h1>
+  <span class="post-date">{{ page.date | date_to_string }}{% include author.html %}</span>
+  {% include series.html %}
+  {{ content }}
+</div>
+
+<div class="tags-line">
+  {% if page.tags.size > 0 %}
+    <p>
+      <span class="tags-head">Tags:</span>
+      {% for tag in page.tags %}
+        {% include tag_link.html %}
+      {% endfor %}
+  {% endif %}
+</div>
+
+{% include next_prev_post.html %}
+
+{% include related.html %}
+
+{% include comments.html %}

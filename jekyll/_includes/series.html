@@ -1,0 +1,28 @@
+{% if page.series %}
+  {% assign series_number = 0 %}
+  {% for post in site.posts %}
+    {% if post.series == page.series %}
+      {% assign series_number = series_number | plus:1 %}
+    {% endif %}
+  {% endfor %}
+  {% if series_number > 1 %}
+    <div class="series">
+      <h4><span class="series-title">{{ page.series }}</span> post series</h4>
+      <ul>
+        {% assign series_number = 0 %}
+        {% for post in site.posts reversed %}
+          {% if post.series == page.series %}
+            {% assign series_number = series_number | plus:1 %}
+            <li class="series-post">
+              {% if post.title == page.title %}
+                {{ post.title }}
+              {% else %}
+                <a href="{{ post.url }}">{{ post.title }}</a>
+              {% endif %}
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% endif %}
