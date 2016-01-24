@@ -172,6 +172,10 @@ div.post span.post-date a {
   color: #a6a5aa;
 }
 
+div.post span.post-date a.author {
+  color: #139;
+}
+
 div.post .series {
   font-size: 95%;
   border-radius: 8px;
