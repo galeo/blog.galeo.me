@@ -373,6 +373,13 @@ div.page-navigation a.prev:before {
 /* end of navigation */
 
 
+/* disqus_thread */
+#disqus_thred {
+  padding: 0 2.2em;
+}
+/* disqus_thread */
+
+
 /* footer */
 .footer {
   margin: 30px 2em 0;
