@@ -1,0 +1,197 @@
+---
+title: "Reindent Python Code in Emacs"
+date: 2013-04-26
+layout: post
+tags: python emacs
+---
+<p>
+前些日子下载了<a href="http://www.jetbrains.com/pycharm/">PyCharm</a>试用<sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>，想着自己也可以慢慢接受一款IDE，看到王垠的一篇关于<a href="http://www.yinwang.org/blog-cn/2013/04/20/editor-ide/">编辑器与IDE</a>的文章：一种语言的“IDE”最能“理解”那种语言。对于一款工具，“专而精”是好的，我应该试着消除自己对IDE的一些偏见。但有的时候，个人对于一款工具的选择或许不会考虑那么多，而是更在乎工具是否“顺手”，是否能提高个人的开发效率。同时，我也期待工具的良好的拓展性，从某些方面来说，拥有良好的拓展性更加人性化——你有可能以自己的方式来做你喜欢做的事情而不必遵守过多的限制，比如哪些功能应该有，某种操作应该是什么方式……虽然对工具进行配置、拓展的过程可能比较麻烦，但是能亲手为自己打造一款“更适合”自己的工具，其中的乐趣也只有自己才能够体会。或者换一种想法，选择IDE还是编辑器，两者并不冲突，可以都试一试。
+</p>
+
+<p>
+Emacs用来做Python开发，还是特别让人舒服的。比如PyCharm中的一些特性，像 <b>code completion</b> 、 <b>snippets</b> 、 <b>code folding</b> 、 <b>error highlighting</b> 、 <b>code refactoring</b> 、 <b>testing</b> 、 <b>version control integration</b> 、 <b>debugger</b> 等，都可以在Emacs中通过配置和拓展来实现。<sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>PyCharm有一个功能，可以通过 <b>Code -&gt; Reformat Code&#x2026;</b> (<kbd>⌥⌘L</kbd>) 来重新格式化Python文件，对代码缩进等进行调整，使其符合PEP8规范。虽然Emacs的Python Mode对代码缩进的控制已经比较好了，但是还是有一些情况需要能够对代码进行重新缩进：好多Python文件使用两个空格来缩进代码，而PEP8规范要求是四个，对于有强迫症的程序员来说，这一点让人不可忍受；有的编辑器默认不会使用空格来替代TAB进行缩进，代码被不同的编辑器修改后容易造成缩进混乱。下面的代码正是为了解决这类问题，通过将 <i>Tim Peters</i> 的Python <a href="https://pypi.python.org/pypi/Reindent/0.1.1">Reindent</a> 脚本集成到Emacs中，为Emacs也添加上PyCharm重新格式化代码的功能，实现对Python代码的重新缩进。
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">revert-buffer-keep-undo</span> <span style="color: #008edd;">(</span><span style="color: #1CC9D5;">&amp;rest</span> <span style="color: #e775fd;">-</span><span style="color: #008edd;">)</span>
+  <span style="color: #ea4f83;">"Revert buffer but keep undo history."</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">interactive</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #d83f43;">inhibit-read-only</span> t<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
+    <span style="color: #70c0b1;">(</span>clear-visited-file-modtime<span style="color: #70c0b1;">)</span>
+    <span style="color: #70c0b1;">(</span>erase-buffer<span style="color: #70c0b1;">)</span>
+    <span style="color: #70c0b1;">(</span>insert-file-contents <span style="color: #9ce55f;">(</span>buffer-file-name<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
+    <span style="color: #70c0b1;">(</span>set-visited-file-modtime<span style="color: #70c0b1;">)</span>
+    <span style="color: #70c0b1;">(</span>set-buffer-modified-p nil<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">revert-python-buffers</span> <span style="color: #008edd;">()</span>
+  <span style="color: #ea4f83;">"Refresh all opened buffers of python files."</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">interactive</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">dolist</span> <span style="color: #70c0b1;">(</span><span style="color: #e775fd;">buf</span> <span style="color: #9ce55f;">(</span>buffer-list<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
+    <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">with-current-buffer</span> buf
+      <span style="color: #9ce55f;">(</span><span style="color: #FC8C15; font-style: italic;">when</span> <span style="color: #e7c547;">(</span><span style="color: #FC8C15; font-style: italic;">and</span> <span style="color: #ef9433;">(</span>buffer-file-name<span style="color: #ef9433;">)</span>
+                 <span style="color: #ef9433;">(</span>string-match <span style="color: #ea4f83;">"\\.</span><span style="color: #ea4f83; font-weight: bold;">\\</span><span style="color: #ea4f83; font-weight: bold;">(</span><span style="color: #ea4f83;">py</span><span style="color: #ea4f83; font-weight: bold;">\\</span><span style="color: #ea4f83; font-weight: bold;">|</span><span style="color: #ea4f83;">pyw</span><span style="color: #ea4f83; font-weight: bold;">\\</span><span style="color: #ea4f83; font-weight: bold;">)</span><span style="color: #ea4f83;">$"</span>
+                               <span style="color: #d83f43;">(</span>file-name-nondirectory <span style="color: #77b530;">(</span>buffer-file-name<span style="color: #77b530;">)</span><span style="color: #d83f43;">)</span><span style="color: #ef9433;">)</span>
+                 <span style="color: #ef9433;">(</span>not <span style="color: #d83f43;">(</span>buffer-modified-p<span style="color: #d83f43;">)</span><span style="color: #ef9433;">)</span><span style="color: #e7c547;">)</span>
+        <span style="color: #e7c547;">(</span>revert-buffer-keep-undo t t t<span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>message <span style="color: #ea4f83;">"Refreshed opened python files."</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defcustom</span> <span style="color: #e775fd;">python-reindent-command</span> <span style="color: #ea4f83;">"reindent -v"</span>
+  <span style="color: #ea4f83;">"Command used to reindent a python file.</span>
+
+<span style="color: #ea4f83;">Change Python (.py) files to use 4-space indents and no hard tab characters.</span>
+<span style="color: #ea4f83;">Also trim excess spaces and tabs from ends of lines, and remove empty lines</span>
+<span style="color: #ea4f83;">at the end of files.  Also ensure the last line ends with a newline.</span>
+
+<span style="color: #ea4f83;">One or more file and/or directory paths can be passed as the arguments</span>
+<span style="color: #ea4f83;">of the command, reindent overwrites files in place. If backups are</span>
+<span style="color: #ea4f83;">required, it will rename the originals with a .bak extension.</span>
+
+<span style="color: #ea4f83;">If it finds nothing to change, the file is left alone.</span>
+
+<span style="color: #ea4f83;">If reindent does change a file, the changed file is a fixed-point for</span>
+<span style="color: #ea4f83;">future runs (i.e., running reindent on the resulting .py file won't</span>
+<span style="color: #ea4f83;">change it again)."</span>
+  <span style="color: #74d6fb; font-style: italic;">:type</span> <span style="color: #FC8C15; font-style: italic;">'</span><span style="color: #12AEB1; font-style: italic;">string</span>
+  <span style="color: #74d6fb; font-style: italic;">:group</span> <span style="color: #FC8C15; font-style: italic;">'</span><span style="color: #12AEB1; font-style: italic;">python</span><span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">python-reindent-directory</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">dir</span> <span style="color: #1CC9D5;">&amp;optional</span> <span style="color: #e775fd;">backup-p</span> <span style="color: #e775fd;">recurse-p</span><span style="color: #008edd;">)</span>
+  <span style="color: #ea4f83;">"Search and reindent .py files in a directory.</span>
+
+<span style="color: #ea4f83;">If BACKUP-P is set to non-nil, backup files with .bak extension will</span>
+<span style="color: #ea4f83;">be generated.</span>
+
+<span style="color: #ea4f83;">All .py files within the directory will be examined, and, if RECURSE-P</span>
+<span style="color: #ea4f83;">is set to non-nil, subdirectories will be recursively searched.</span>
+
+<span style="color: #ea4f83;">Check `</span><span style="color: #12AEB1; font-style: italic;">python-reindent-command</span><span style="color: #ea4f83;">' for what the indentation action will do."</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">interactive</span>
+   <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #9ce55f;">(</span><span style="color: #e7c547;">(</span><span style="color: #e775fd;">directory-name</span>
+          <span style="color: #ef9433;">(</span>ido-read-directory-name <span style="color: #ea4f83;">"Reindent directory: "</span><span style="color: #ef9433;">)</span><span style="color: #e7c547;">)</span>
+         <span style="color: #e7c547;">(</span><span style="color: #e775fd;">recurse</span> <span style="color: #ef9433;">(</span>y-or-n-p <span style="color: #ea4f83;">"Search recursively for all .py files?"</span><span style="color: #ef9433;">)</span><span style="color: #e7c547;">)</span>
+         <span style="color: #e7c547;">(</span><span style="color: #e775fd;">backup</span> <span style="color: #ef9433;">(</span>y-or-n-p <span style="color: #ea4f83;">"Before reindentation, backup the files?"</span><span style="color: #ef9433;">)</span><span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span>
+     <span style="color: #9ce55f;">(</span>list directory-name backup recurse<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>save-some-buffers <span style="color: #70c0b1;">(</span>not compilation-ask-about-save<span style="color: #70c0b1;">)</span> nil<span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>shell-command <span style="color: #70c0b1;">(</span>concat python-reindent-command <span style="color: #ea4f83;">" "</span>
+                         <span style="color: #9ce55f;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #e7c547;">(</span>not backup-p<span style="color: #e7c547;">)</span>
+                             <span style="color: #ea4f83;">"--nobackup "</span><span style="color: #9ce55f;">)</span>
+                         <span style="color: #9ce55f;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> recurse-p
+                             <span style="color: #ea4f83;">"--recurse "</span><span style="color: #9ce55f;">)</span>
+                         dir<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>revert-python-buffers<span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>message
+   <span style="color: #70c0b1;">(</span>concat <span style="color: #ea4f83;">"Reindent files done!"</span>
+           <span style="color: #9ce55f;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> backup-p
+               <span style="color: #ea4f83;">" Backup files with '</span><span style="color: #12AEB1; font-style: italic;">.bak</span><span style="color: #ea4f83;">' extension generated."</span><span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">python-reindent-file</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">file</span> <span style="color: #1CC9D5;">&amp;optional</span> <span style="color: #e775fd;">backup-p</span><span style="color: #008edd;">)</span>
+  <span style="color: #ea4f83;">"Reindent a file(by default the one opened in current buffer).</span>
+
+<span style="color: #ea4f83;">If BACKUP-P is set to non-nil, a backup file with .bak extension will</span>
+<span style="color: #ea4f83;">be generated.</span>
+
+<span style="color: #ea4f83;">Check `</span><span style="color: #12AEB1; font-style: italic;">python-reindent-command</span><span style="color: #ea4f83;">' for what the indentation action will do."</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">interactive</span>
+   <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">let*</span> <span style="color: #9ce55f;">(</span><span style="color: #e7c547;">(</span><span style="color: #e775fd;">file-name</span>
+           <span style="color: #ef9433;">(</span>ido-read-file-name
+            <span style="color: #ea4f83;">"Reindent file: "</span> nil
+            <span style="color: #d83f43;">(</span>file-name-nondirectory <span style="color: #77b530;">(</span>buffer-file-name<span style="color: #77b530;">)</span><span style="color: #d83f43;">)</span><span style="color: #ef9433;">)</span><span style="color: #e7c547;">)</span>
+          <span style="color: #e7c547;">(</span><span style="color: #e775fd;">backup</span> <span style="color: #ef9433;">(</span>y-or-n-p <span style="color: #ea4f83;">"Before reindentation, backup the file?"</span><span style="color: #ef9433;">)</span><span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span>
+     <span style="color: #9ce55f;">(</span>list file-name backup<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>save-some-buffers <span style="color: #70c0b1;">(</span>not compilation-ask-about-save<span style="color: #70c0b1;">)</span> nil<span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>shell-command <span style="color: #70c0b1;">(</span>concat python-reindent-command <span style="color: #ea4f83;">" "</span>
+                         <span style="color: #9ce55f;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #e7c547;">(</span>not backup-p<span style="color: #e7c547;">)</span>
+                             <span style="color: #ea4f83;">"--nobackup "</span><span style="color: #9ce55f;">)</span>
+                         file<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>revert-python-buffers<span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>message
+   <span style="color: #70c0b1;">(</span>concat <span style="color: #ea4f83;">"Reindent file done!"</span>
+           <span style="color: #9ce55f;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> backup-p
+               <span style="color: #ea4f83;">" A .bak file has been generated."</span><span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">python-reindent-region</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">beg</span> <span style="color: #e775fd;">end</span><span style="color: #008edd;">)</span>
+  <span style="color: #ea4f83;">"Reindent the code of the region or the buffer if no region selected."</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">interactive</span>
+   <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #9ce55f;">(</span><span style="color: #FC8C15; font-style: italic;">or</span> <span style="color: #e7c547;">(</span>null transient-mark-mode<span style="color: #e7c547;">)</span>
+           mark-active<span style="color: #9ce55f;">)</span>
+       <span style="color: #9ce55f;">(</span>list <span style="color: #e7c547;">(</span>region-beginning<span style="color: #e7c547;">)</span> <span style="color: #e7c547;">(</span>region-end<span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span>
+     <span style="color: #9ce55f;">(</span>list <span style="color: #e7c547;">(</span>point-min<span style="color: #e7c547;">)</span> <span style="color: #e7c547;">(</span>point-max<span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #e775fd;">output</span> <span style="color: #e7c547;">(</span><span style="color: #FC8C15; font-style: italic;">with-output-to-string</span>
+                  <span style="color: #ef9433;">(</span>shell-command-on-region
+                   beg end
+                   python-reindent-command
+                   standard-output nil<span style="color: #ef9433;">)</span><span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span>
+        <span style="color: #9ce55f;">(</span><span style="color: #e775fd;">error-buffer</span> <span style="color: #ea4f83;">"*Shell Output Error*"</span><span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
+    <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #9ce55f;">(</span><span style="color: #FC8C15; font-style: italic;">and</span> output
+             <span style="color: #e7c547;">(</span>not <span style="color: #ef9433;">(</span>string-match <span style="color: #ea4f83;">"^Traceback</span><span style="color: #ea4f83; font-weight: bold;">\\</span><span style="color: #ea4f83; font-weight: bold;">|</span><span style="color: #ea4f83;">^\\w+Error:"</span> output<span style="color: #ef9433;">)</span><span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span>
+        <span style="color: #ef9433; font-style: italic;">;; </span><span style="color: #77b530; font-style: italic;">no error</span>
+        <span style="color: #9ce55f;">(</span><span style="color: #FC8C15; font-style: italic;">progn</span>
+          <span style="color: #e7c547;">(</span>goto-char beg<span style="color: #e7c547;">)</span>
+          <span style="color: #e7c547;">(</span>kill-region beg end<span style="color: #e7c547;">)</span>
+          <span style="color: #e7c547;">(</span>insert output<span style="color: #e7c547;">)</span>
+          <span style="color: #e7c547;">(</span>message <span style="color: #ea4f83;">"Code has been reindented!"</span><span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span>
+      <span style="color: #9ce55f;">(</span><span style="color: #FC8C15; font-style: italic;">progn</span>
+        <span style="color: #e7c547;">(</span>set-buffer <span style="color: #ef9433;">(</span>get-buffer-create error-buffer<span style="color: #ef9433;">)</span><span style="color: #e7c547;">)</span>
+        <span style="color: #e7c547;">(</span>insert output<span style="color: #e7c547;">)</span>
+        <span style="color: #e7c547;">(</span>display-buffer error-buffer<span style="color: #e7c547;">)</span>
+        <span style="color: #e7c547;">(</span>message <span style="color: #ea4f83;">"Error occurred, please check!"</span><span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+下面是简单的使用说明：
+</p>
+
+<ul class="org-ul">
+<li><p>
+首先，使用 <i>pip</i> 安装Python Reindent：
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">pip install -U Reindent
+</pre>
+</div></li>
+
+<li>然后，从<a href="https://gist.github.com/galeo/5465488">这里</a>下载gist文件，将其添加进Emacs的 <code>load-path</code> ，并在Emacs初始化文件中添加 <code>(require 'python-reindent)</code> 。<sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup></li>
+
+<li>通过 <code>M-x python-reindent-* RET</code> 执行相应的命令即可对Python代码进行重新缩进。为了方便，可以根据个人喜好为 <code>python-reindent-*</code> 等命令设置快捷键。</li>
+</ul>
+
+<p>
+需要注意的是， <code>python-reindent-region</code> 命令会重新缩进选中的代码区域，如果没有代码被选择，则会对整个buffer进行操作。
+</p>
+
+<p>
+关于 <i>Python Reindent</i> 的详细说明，请参考其代码。
+</p>
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1">参考文献</h2>
+<div class="outline-text-2" id="text-orgheadline1">
+<ol class="org-ol">
+<li><a href="http://www.emacswiki.org/emacs/ExecuteExternalCommand">EmacsWiki: Execute External Command</a></li>
+<li><a href="http://emacswiki.org/emacs/RevertBuffer">EmacsWiki: Revert Buffer</a></li>
+<li><a href="http://emacswiki.org/emacs/InteractivelyDoThings">EmacsWiki: Interactively Do Things</a></li>
+<li><a href="http://stackoverflow.com/questions/206806/filtering-text-through-a-shell-command-in-emacs">Filtering text through a shell command in Emacs - Stack Overflow</a></li>
+</ol>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">
+JetBrains开发工具在OSChina上做三折促销。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><p class="footpara">
+可以参考<a href="https://github.com/fgallina/python.el">fgallina/python.el</a>、<a href="http://emacswiki.org/emacs/PythonProgrammingInEmacs">EmacsWiki: Python Programming In Emacs</a>、<a href="https://github.com/gabrielelanaro/emacs-for-python">gabrielelanaro/emacs-for-python</a>。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3">3</a></sup> <div class="footpara"><p class="footpara">
+或者，可以简单地直接将上面的代码添加到Emacs初始化文件中。</p></div></div>
+
+
+</div>
+</div>

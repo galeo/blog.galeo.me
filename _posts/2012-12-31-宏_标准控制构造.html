@@ -1,0 +1,490 @@
+---
+title: "宏:标准控制构造"
+date: 2012-12-31
+layout: post
+tags: CommonLisp
+series: "Practical Common Lisp"
+---
+<p>
+<b>Lisp的宏系统使其始终保持在编程语言风格上的独特性。</b>
+</p>
+
+<p>
+所有的程序员应该都比较熟知这样一种观点，一种编程语言的定义可能会包含一个实现了“核心”语言功能的标准功能库——如果某个功能没有被定义在标准库中，那么其很可能已经被某个程序员在语言之上实现了。例如，C的标准库，差不多可以完全用可移植的C来实现。类似地，Java的标准开发工具包（JDK）中所提供的不断改进的类和接口的集合也是用“纯”Java编写的。
+</p>
+
+<p>
+使用语言核心加一个标准库的方式来定义一种编程语言的优势在于可以使其易于理解和实现，但真正的好处在于其可表达性——因为你所认为的“语言”很大程度上其实只是一个库，很容易对其进行拓展。如果C语言中不包含你所需要做某件事情的一个函数，你可以写出这个函数，然后你就得到了一个特性稍微丰富点的C版本。类似地，在诸如Java或者Smalltalk这种几乎所有有趣部分都是用类来定义的语言当中，你可以通过定义新的类来拓展该语言，使其更加适合你正编写的程序来试图做任何事情。
+</p>
+
+<p>
+Common Lisp支持所有这些扩展语言的方法，但 <b>宏</b> 还提供了另一种方式。每个宏都定义了其自己的语法，它们能够决定那些被传递的S-表达式如何被转换成Lisp形式。宏作为部分语言核心，使其可以构造出新的语法，例如 <b>WHEN</b> 、 <b>DOLIST</b> 和 <b>LOOP</b> 这样的控制构造以及 <b>DEFUN</b> 和 <b>DEFPARAMETER</b> 这样的定义形式，这些新语法可以作为“标准库”的一部分而不必将其硬编码到语言核心。这已经牵涉到语言本身是如何实现的问题了，作为一名Lisp程序员，你需要更多地注意其所提供的宏这种语言扩展方式，这使得其成为更好的用于表达特定编程问题解决方案的语言。<sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>
+</p>
+
+<p>
+我们从Common Lisp所定义的几种标准控制构造宏开始Lisp宏的讨论。
+</p>
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1">WHEN &amp; UNLESS</h2>
+<div class="outline-text-2" id="text-orgheadline1">
+<p>
+最基本的条件执行形式通过 <b>IF</b> 特殊操作符来完成:
+</p>
+<pre class="example">
+(if condition then-form [else-form])
+</pre>
+
+<p>
+Some examples:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #008edd;">(</span>&gt; 2 3<span style="color: #008edd;">)</span> <span style="color: #ea4f83;">"Yup"</span> <span style="color: #ea4f83;">"Nope"</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; "Nope"</span>
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #008edd;">(</span>&gt; 2 3<span style="color: #008edd;">)</span> <span style="color: #ea4f83;">"Yup"</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; NIL</span>
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #008edd;">(</span>&gt; 3 2<span style="color: #008edd;">)</span> <span style="color: #ea4f83;">"Yup"</span> <span style="color: #ea4f83;">"Nope"</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; "Yup"</span>
+</pre>
+</div>
+
+<p>
+<b>IF</b> 中每个 <i>then-form</i> 和 <i>else-form</i> 都被限制为必须是单一的Lisp形式。通过特殊操作符 <b>PROGN</b> 可以按顺序执行任意数量的形式并返回最后一个形式的值，e.g.:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #008edd;">(</span>spam-p current-message<span style="color: #008edd;">)</span>
+    <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">progn</span>
+      <span style="color: #70c0b1;">(</span>file-in-spam-folder current-message<span style="color: #70c0b1;">)</span>
+      <span style="color: #70c0b1;">(</span>update-spam-database current-message<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+为了将这种由IF加上PROGN所组成的模式进行抽象来隐藏掉细节，Common Lisp提供了一个标准宏 <b>WHEN</b> ，可以让你这样写:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">when</span> <span style="color: #008edd;">(</span>spam-p current-message<span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>file-in-spam-folder current-message<span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>update-spam-database current-message<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+你可以像这样用一个宏来定义自己的WHEN:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defmacro</span> <span style="color: #4AE2CA; font-weight: bold;">my-when</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">condition</span> <span style="color: #1CC9D5;">&amp;rest</span> <span style="color: #e775fd;">body</span><span style="color: #008edd;">)</span>
+  <span style="color: #d83f43;">`</span><span style="color: #008edd; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">if</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #d83f43;">,</span>conditon<span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">progn</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #d83f43;">,@</span>body<span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd; font-style: italic;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+宏 <b>UNLESS</b> 取WHEN相反的条件，可以这样定义你自己的UNLESS:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defmacro</span> <span style="color: #4AE2CA; font-weight: bold;">my-unless</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">condition</span> <span style="color: #1CC9D5;">&amp;rest</span> <span style="color: #e775fd;">body</span><span style="color: #008edd;">)</span>
+  <span style="color: #d83f43;">`</span><span style="color: #008edd; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">if</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">not </span><span style="color: #d83f43;">,</span>condition<span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">progn</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #d83f43;">,@</span>body<span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd; font-style: italic;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+宏系统是直接构建在语言之中的，所以你可以写出像WHEN和UNLESS这样简单的宏来获得小而重要的清晰性，并随后通过不断的使用而无限放大。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2">COND</h2>
+<div class="outline-text-2" id="text-orgheadline2">
+<p>
+<b>COND</b> 用于表达多重分支条件，其基本构造为:
+</p>
+<pre class="example">
+(cond
+  (test-1 form*)
+      .
+      .
+      .
+  (test-N form*))
+</pre>
+
+<p>
+主体中每个元素都代表一个条件分支，并由一个列表所构成，列表中含有一个条件形式以及零或多个当该分支被选择时将被求值的形式。这些条件形式按照分支在主体中出现的顺序被依次求值，直到它们中的一个求值为真，此时分支中的其余形式将被求值，且其最后一个形式的值将作为整个COND的值返回。如果该分支在条件形式之后不含有其他形式，那么将返回该条件形式的值。
+</p>
+
+<p>
+习惯上，用来表示if/else链中最后一个else子句的分支将被写成带有条件 <b>T</b> ，e.g.:
+</p>
+<pre class="example">
+(cond (a (do-x))
+      (b (do-y))
+      (t (do-z)))
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgheadline3" class="outline-2">
+<h2 id="orgheadline3">AND, OR &amp; NOT</h2>
+<div class="outline-text-2" id="text-orgheadline3">
+<p>
+三个布尔逻辑操作符 <b>AND</b> 、 <b>OR</b> 和 <b>NOT</b> 经常用在使用IF、WHEN、UNLESS和COND形式编写条件语句时。注意，这里 <b>NOT</b> 是一个函数，不是宏。
+</p>
+
+<p>
+AND和OR实现了对任意数量子表达式的逻辑合取和析取操作，并被定义成宏以便支持“短路”特性，即它们仅以从左到右的顺序对用于检测整体真值的必要数量的子表达式进行求值。一些例子:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span>not nil<span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; T</span>
+<span style="color: #b77cfb;">(</span>not <span style="color: #008edd;">(</span>= 1 1<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; NIL</span>
+<span style="color: #b77cfb;">(</span>and <span style="color: #008edd;">(</span>= 1 2<span style="color: #008edd;">)</span> <span style="color: #008edd;">(</span>= 3 3<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; NIL</span>
+<span style="color: #b77cfb;">(</span>or <span style="color: #008edd;">(</span>= 1 2<span style="color: #008edd;">)</span> <span style="color: #008edd;">(</span>= 3 3<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; T</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline4" class="outline-2">
+<h2 id="orgheadline4">循环</h2>
+<div class="outline-text-2" id="text-orgheadline4">
+<p>
+Lisp的25个特殊操作符中没有一个能够支持结构化循环，所有的Lisp循环控制构造都是构建在一对提供原生goto机制的特殊操作符之上的宏。<sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>Lisp的循环宏构建在以那两个特殊操作符为基础的一组分层抽象之上。
+</p>
+
+<p>
+DO提供了一种基本的结构化循环构造，DOLIST和DOTIMES提供了两种易用却不通用的构造，当然你可以在DO之上继续构建自定义的循环构造。
+</p>
+</div>
+
+<div id="outline-container-orgheadline5" class="outline-3">
+<h3 id="orgheadline5">DOLIST &amp; DOTIMES</h3>
+<div class="outline-text-3" id="text-orgheadline5">
+<p>
+<b>DOLIST</b> 和 <b>DOTIMES</b> 分别用于常见的在列表元素上的循环和计数循环，二者都只提供一个循环变量。
+</p>
+
+<p>
+<b>DOLIST</b> 在一个列表的元素上循环操作，使用一个依次持有列表中所有后继元素的变量来执行循环体，其基本形式如下:
+</p>
+<pre class="example">
+(dolist (var list-form)
+  body-form*)
+</pre>
+
+<p>
+循环开始时， <i>list-form</i> 被求值一次产生一个列表，然后循环体在列表的每一项上求值一次，使用变量 <i>var</i> 保存当前项的值，例如:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">dolist</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">x</span> '<span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">1 2 3</span><span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd;">)</span> <span style="color: #008edd;">(</span>print x<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; NIL</span>
+</pre>
+</div>
+
+<p>
+如果想在列表结束之前终止一个DOLIST循环，使用 <b>RETURN</b> :
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">dolist</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">x</span> '<span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">1 2 3</span><span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>print x<span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #70c0b1;">(</span>evenp x<span style="color: #70c0b1;">)</span>
+      <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">return</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+<b>DOTIMES</b> 用于计数循环，基本形式:
+</p>
+<pre class="example">
+(dotimes (var count-form)
+  body-form*)
+</pre>
+
+<p>
+<i>count-form</i> 必须要能求值为一个整数，每次循环， <i>var</i> 所保持的整数依次为从0到比那个数小1的每一个后继整数，例如:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">dotimes</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">i</span> 4<span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>print i<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+也可以使用RETURN来提前终止循环。
+</p>
+
+<p>
+DOLIST和DOTIMES的循环体中可以包含任何类型的表达式，所以可以嵌套循环:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #ef9433; font-style: italic;">; </span><span style="color: #77b530; font-style: italic;">&#25171;&#21360;&#20174;1*1=1&#21040;20*20=400&#30340;&#20056;&#27861;&#34920;</span>
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">dotimes</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">x</span> 20<span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">dotimes</span> <span style="color: #70c0b1;">(</span><span style="color: #e775fd;">y</span> 20<span style="color: #70c0b1;">)</span>
+    <span style="color: #70c0b1;">(</span>format t <span style="color: #ea4f83;">"~3d "</span> <span style="color: #9ce55f;">(</span>* <span style="color: #e7c547;">(</span>1+ x<span style="color: #e7c547;">)</span> <span style="color: #e7c547;">(</span>1+ y<span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"~%"</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline6" class="outline-3">
+<h3 id="orgheadline6">DO</h3>
+<div class="outline-text-3" id="text-orgheadline6">
+<p>
+<b>DO</b> 允许绑定任意数量的变量，并且变量值在每次循环中的改变方式是完全可控的，也可以定义测试条件来决定何时终止循环，并可提供一个形式，用于在循环结束时进行求值来为DO表达式整体生成一个返回值。其基本形式:
+</p>
+<pre class="example">
+(do (variable-definition*)
+    (end-test-form result-form*)
+  statement*)
+</pre>
+
+<p>
+每一个 <i>variable-definition</i> 引入了一个将存在于循环体作用域之内的变量。单一变量定义的完整形式时一个三元素列表:
+</p>
+<pre class="example">
+(var init-form step-form)
+</pre>
+
+<p>
+<i>init-form</i> 将在循环开始时被求值并将结果绑定到变量 <i>var</i> 上。循环的每一个后续迭代开始之前， <i>step-form</i> 将被求值，并把新值赋给 <i>var</i> 。 <i>step-form</i> 是可选的，如果没有给出，那么变量在迭代过程中保持其值不变，除非在循环体中为其赋予新值。和 <b>LET</b> 中的变量定义一样，如果 <i>init-form</i> 没有给出，变量将被绑定到 <b>NIL</b> 。和LET的情形一样，你可以将一个只含有名字的列表简化成一个简单的变量名来使用。<sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup>
+</p>
+
+<p>
+每次迭代开始并且所有循环变量都被赋予新值后， <i>end-test-form</i> 会被求值，只要其值不为真，迭代就会继续，依次求值所有的 <i>statement</i> 。
+</p>
+
+<p>
+当 <i>end-test-form</i> 求值为真时， <i>result-form</i> 将被求值，且最后一个形式的值将被作为DO表达式的结果返回。
+</p>
+
+<p>
+每一次迭代中，所有变量的 <i>step-form</i> (步长形式)将在分配任何值给变量之前被求值，所以可以在步长形式里引用其他任何循环变量。<sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>例如下面的循环:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #ef9433; font-style: italic;">; </span><span style="color: #77b530; font-style: italic;">&#35745;&#31639;&#31532;11&#20010;&#26000;&#27874;&#37027;&#22865;&#25968;</span>
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">do</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>n 0 <span style="color: #9ce55f;">(</span>1+ n<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span> <span style="color: #77b530; font-style: italic;">; first var</span>
+     <span style="color: #70c0b1;">(</span>cur 0 next<span style="color: #70c0b1;">)</span> <span style="color: #77b530; font-style: italic;">; second var</span>
+     <span style="color: #70c0b1;">(</span>next 1 <span style="color: #9ce55f;">(</span>+ cur next<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span> <span style="color: #77b530; font-style: italic;">; third var</span>
+    <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>= 10 n<span style="color: #70c0b1;">)</span> cur<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; end-test-form result-form</span>
+</pre>
+</div>
+
+<p>
+其步长形式(1+ n)、next和(1+ cur next)均使用n、cur和next的旧值来求值，当所有步长形式都被求值后，其对应的变量才被赋予步长形式求解到的新值。
+</p>
+
+<p>
+由于DO循环可以同时推进多个变量，所以往往不需要一个循环体；在只是把循环用作控制结构时，可能会省略结果形式，这种灵活性正式DO表达式有点儿难懂的原因。理解DO表达式的最佳方式是记住其基本模板:
+</p>
+<pre class="example">
+(do (variable-definition*)
+    (end-test-form result-form*)
+  statement*)
+</pre>
+
+<p>
+该模板中的6个括号时DO结构本身所必需的:
+</p>
+<ol class="org-ol">
+<li>一对括号来围住变量声明。</li>
+<li>一对用来围住终止测试形式和结果形式。</li>
+<li>最后一对围住整个表达式。</li>
+</ol>
+
+<p>
+DO中的其他形式需要它们自己的括号，例如变量定义总是列表形式，而测试形式通常是一个函数调用。
+</p>
+
+<p>
+DO循环的框架将总是一致的，下面的例子:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">do</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>i 0 <span style="color: #9ce55f;">(</span>1+ i<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+    <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>&gt;= i 4<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>print i<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+其中的结果形式被省略了，此例最好用DOTIMES来写<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup>:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">dotimes</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">i</span> 4<span style="color: #008edd;">)</span> <span style="color: #008edd;">(</span>print i<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+没有循环体的斐波那契数计算循环:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">do</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>n 0 <span style="color: #9ce55f;">(</span>1+ n<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
+     <span style="color: #70c0b1;">(</span>cur 0 next<span style="color: #70c0b1;">)</span>
+     <span style="color: #70c0b1;">(</span>next 1 <span style="color: #9ce55f;">(</span>1+ cur next<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+    <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>= 10 n<span style="color: #70c0b1;">)</span> cur<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+一个不绑定变量的DO循环:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">do</span> <span style="color: #008edd;">()</span>
+    <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>&gt; <span style="color: #9ce55f;">(</span>get-universal-time<span style="color: #9ce55f;">)</span> *some-future-date*<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"Waiting~%"</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>sleep 60<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+在当前时间小于一个全局变量值的时候，它保持循环，每分钟打印一个"Waiting"。注意，就算没有循环变量，仍需要有那个空变量列表。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline7" class="outline-3">
+<h3 id="orgheadline7">LOOP</h3>
+<div class="outline-text-3" id="text-orgheadline7">
+<p>
+某些少量的循环用法，例如在多种数据结构上的循环：列表、向量、哈希表和包，或者在循环时以多种方式来聚集值：收集、计数、求和、最小化和最大化，LOOP宏可以容易地来做其中的一件或同时几件。
+</p>
+
+<p>
+LOOP宏有两大类——简化的和扩展的。
+</p>
+
+<p>
+简化的版本就是一个不绑定任何变量的无限循环，基本形式像这样：
+</p>
+<pre class="example">
+(loop
+  body-form*)
+</pre>
+
+<p>
+主体形式在每次循环时都将被求值，循环不停地进行，直到使用RETURN来终止。例如，前面的例子可以这样写：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">loop</span>
+   <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">when</span> <span style="color: #70c0b1;">(</span>&gt; <span style="color: #9ce55f;">(</span>get-universal-time<span style="color: #9ce55f;">)</span> *some-future-date*<span style="color: #70c0b1;">)</span>
+     <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">return</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+   <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"Waiting~%"</span><span style="color: #008edd;">)</span>
+   <span style="color: #008edd;">(</span>sleep 60<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+复杂的循环构造，例如一个DO循环将数字1到10收集到一个列表中：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">do</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>nums nil<span style="color: #70c0b1;">)</span>
+     <span style="color: #70c0b1;">(</span>i 1 <span style="color: #9ce55f;">(</span>1+ i<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+    <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>&gt; i 10<span style="color: #70c0b1;">)</span> <span style="color: #70c0b1;">(</span>nreverse nums<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>push i nums<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+<span style="color: #ef9433; font-style: italic;">; </span><span style="color: #77b530; font-style: italic;">(1 2 3 4 5 6 7 8 9 10)</span>
+</pre>
+</div>
+
+<p>
+它的LOOP版本：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">loop</span> <span style="color: #74d6fb; font-style: italic;">for</span> <span style="color: #e775fd;">i</span> <span style="color: #74d6fb; font-style: italic;">from</span> 1 <span style="color: #74d6fb; font-style: italic;">to</span> 10 <span style="color: #74d6fb; font-style: italic;">collecting</span> i<span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+下面是一些关于LOOP简单用法的举例：
+</p>
+<ol class="org-ol">
+<li><p>
+对前十个平方数求和
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">loop</span> <span style="color: #74d6fb; font-style: italic;">for</span> <span style="color: #e775fd;">x</span> <span style="color: #74d6fb; font-style: italic;">from</span> 1 <span style="color: #74d6fb; font-style: italic;">to</span> 10 summing <span style="color: #008edd;">(</span>expt x 2<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; 385</span>
+</pre>
+</div></li>
+
+<li><p>
+统计一个字符串中元音字母的个数
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">loop</span> <span style="color: #74d6fb; font-style: italic;">for</span> <span style="color: #e775fd;">x</span> <span style="color: #74d6fb; font-style: italic;">across</span> <span style="color: #ea4f83;">"the quick brown fox jumps over the lazy dog"</span>
+     counting <span style="color: #008edd;">(</span>find x <span style="color: #ea4f83;">"aeiou"</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; 11</span>
+</pre>
+</div></li>
+
+<li><p>
+计算第11个斐波那契数，类似之前DO循环版本
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">loop</span> <span style="color: #74d6fb; font-style: italic;">for</span> <span style="color: #e775fd;">i</span> <span style="color: #74d6fb; font-style: italic;">below</span> 10
+   <span style="color: #74d6fb; font-style: italic;">and</span> a <span style="color: #74d6fb; font-style: italic;">=</span> 0 <span style="color: #74d6fb; font-style: italic;">then</span> b
+   <span style="color: #74d6fb; font-style: italic;">and</span> b <span style="color: #74d6fb; font-style: italic;">=</span> 1 <span style="color: #74d6fb; font-style: italic;">then</span> <span style="color: #008edd;">(</span>+ b a<span style="color: #008edd;">)</span>
+   <span style="color: #74d6fb; font-style: italic;">finally</span> <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">return</span> a<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div></li>
+</ol>
+
+<p>
+符号 <b>across and below collecting counting finally for from summing then to</b> 等都是一些循环关键字，它们的存在表明当前正在使用扩展的LOOP。<sup><a id="fnr.6" class="footref" href="#fn.6">6</a></sup>
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline8" class="outline-2">
+<h2 id="orgheadline8">参考来源</h2>
+<div class="outline-text-2" id="text-orgheadline8">
+<ul class="org-ul">
+<li><a href="http://gigamonkeys.com/book/macros-standard-control-constructs.html">Macros: Standard Control Constructs</a>, <i>Practical Common Lisp</i>, by <i>Peter Seibel</i></li>
+<li>《实用Common Lisp编程》－人民邮电出版社，第1版，田春译</li>
+</ul>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">
+出于某些原因，对于很多没有实际使用过Lisp宏的人而言，他们可以为了解决编程问题而日复一日地去创建新的函数抽象或定义新的类的层次，却被Lisp宏这种可以定义新的句法抽象的思想给吓到了。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><p class="footpara">
+这两个操作符是 <b>TAGBODY</b> 和 <b>GO</b> 。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3">3</a></sup> <div class="footpara"><p class="footpara">
+e.g., '<i>(list-name)</i> .
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.4" class="footnum" href="#fnr.4">4</a></sup> <div class="footpara"><p class="footpara">
+DO的变体 <b>DO*</b> ，会在求值后续变量的步长形式之前为每个变量赋值。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.5" class="footnum" href="#fnr.5">5</a></sup> <div class="footpara"><p class="footpara">
+另一好处是其宏展开将可以包含允许编译器生成更有效代码的类型声明。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.6" class="footnum" href="#fnr.6">6</a></sup> <div class="footpara"><p class="footpara">
+循环关键字不是关键字符号。</p></div></div>
+
+
+</div>
+</div>

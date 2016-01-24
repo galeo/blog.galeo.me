@@ -1,0 +1,187 @@
+---
+title: "Common Lisp - Function Parameter Lists"
+date: 2012-09-22
+layout: post
+tags: CommonLisp
+---
+<blockquote>
+<p>
+Common Lisp's parameter lists give you more flexible ways of mapping the arguments in a function call to the function's parameters &#x2026; (They) provide a convenient solution to several common coding problems.
+</p>
+</blockquote>
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1">必要形参(Required Parameters)</h2>
+<div class="outline-text-2" id="text-orgheadline1">
+<p>
+形参列表如果仅是一个由变量名组成的简单列表，这些形参被称为 <span class="underline">必要形参</span> 。函数被调用时，必须为它的每一个必要形参都提供一个实参，每一个形参被绑定到与之对应的实参上。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2">可选形参(Optional Parameters)</h2>
+<div class="outline-text-2" id="text-orgheadline2">
+<p>
+在必要形参的名字之后放置符号 <b>&amp;optional</b> ，后接可选形参。e.g.:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">a</span> <span style="color: #e775fd;">b</span> <span style="color: #1CC9D5;">&amp;optional</span> <span style="color: #e775fd;">c</span> <span style="color: #e775fd;">d</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>list a b c d<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+如果实参在所有可选形参被赋值之前用完了，那么其余的可选形参将自动绑定到值 <b>NIL</b> 上。如果想要一个不同于 <b>NIL</b> 的默认值，可以通过将形参名替换成一个含有 <span class="underline">名字跟表达式</span> 的列表来制定该默认值，在调用者没有传递足够的实参来为可选形参提供值的时候，这个表达式才会被求值。e.g.:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">a</span> <span style="color: #1CC9D5;">&amp;optional</span> <span style="color: #70c0b1;">(</span>b 10<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>list a b<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+可以灵活地选择默认值，默认值表达式可以应用早先出现在形参列表中的形参。e.g.:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">make-rectangle</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">width</span> <span style="color: #1CC9D5;">&amp;optional</span> <span style="color: #70c0b1;">(</span>height width<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span> ...<span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+<p>
+本例中，除非明确指定否则将导致height形参带有和width形参相同的值。
+</p>
+
+<p>
+想确定一个可选形参的值究竟是被调用者明确指定的还是使用了默认值，通过在形参标识符的默认值表达式之后添加一个变量名来做到这一点。该变量将在调用者实际为该形参提供了一个实参时被绑定到真值，否则绑定到 <b>NIL</b> 。通常约定，这种变量的名字与对应的真实形参相同，但是带有一个 <b>-supplied-p</b> 后缀。e.g.:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">a</span> <span style="color: #e775fd;">b</span> <span style="color: #1CC9D5;">&amp;optional</span> <span style="color: #70c0b1;">(</span>c 3 c-supplied-p<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>list a b c c-supplied-p<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline3" class="outline-2">
+<h2 id="orgheadline3">剩余形参(Rest Parameters)</h2>
+<div class="outline-text-2" id="text-orgheadline3">
+<p>
+Lisp允许在符号 <b>&amp;rest</b> 之后包括一揽子形参。如果函数带有 <b>&amp;rest</b> 形参，那么任何满足了必要和可选形参之后的剩余所有实参就将被收集到一个列表里成为该 <b>&amp;rest</b> 形参的值。 <b>FORMAT</b> 和 <b>+</b> 的形参列表可能看起来会是这样:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">format</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">stream</span> <span style="color: #e775fd;">string</span> <span style="color: #1CC9D5;">&amp;rest</span> <span style="color: #e775fd;">values</span><span style="color: #008edd;">)</span> ...<span style="color: #b77cfb;">)</span>
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">+</span> <span style="color: #008edd;">(</span><span style="color: #1CC9D5;">&amp;rest</span> <span style="color: #e775fd;">numbers</span><span style="color: #008edd;">)</span> ...<span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline4" class="outline-2">
+<h2 id="orgheadline4">关键字形参(Keywords Parameters)</h2>
+<div class="outline-text-2" id="text-orgheadline4">
+<p>
+可选形参是位置相关的，如果调用者想要给一个接受四个可选参数的函数的第四个可选形参传递一个显式的值，就会导致前三个可选形参对于该调用者来说变成了必要形参。关键字形参允许调用者指定具体形参的值。
+</p>
+
+<p>
+使函数带有关键字形参，在任何必要的和 <b>&amp;optional</b> 以及 <b>&amp;rest</b> 形参之后，可以加上符号 <b>&amp;key</b> 以及任意数量的关键字形参标识符，后者的格式类似于可选形参标识符。e.g.:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">(</span><span style="color: #1CC9D5;">&amp;key</span> <span style="color: #e775fd;">a</span> <span style="color: #e775fd;">b</span> <span style="color: #e775fd;">c</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>list a b c<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+当调用这个函数时，每一个关键字形参将被绑定到紧跟在同名键字后面的那个值上，关键字是以冒号开始的名字，并且它们将被自动定义为自求值常量。
+</p>
+
+<p>
+如果一个给定的关键字没有出现在实参列表中，那么对应的形参将被赋予其默认值，如同可选形参那样。
+</p>
+
+<p>
+如同可选形参那样，关键字形参也可以提供一个默认值形式以及一个 <b>supplied-p</b> 变量名。在关键字形参和可选形参中，默认值形式都可以引用那些早先出现在形参列表中的形参。e.g.:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">(</span><span style="color: #1CC9D5;">&amp;key</span> <span style="color: #70c0b1;">(</span>a 0<span style="color: #70c0b1;">)</span> <span style="color: #70c0b1;">(</span>b 0 b-supplied-p<span style="color: #70c0b1;">)</span> <span style="color: #70c0b1;">(</span>c <span style="color: #9ce55f;">(</span>+a b<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>list a b c b-supplied-p<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span>foo <span style="color: #74d6fb; font-style: italic;">:a</span> 2 <span style="color: #74d6fb; font-style: italic;">:b</span> 1 <span style="color: #74d6fb; font-style: italic;">:c</span> 4<span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; (2 1 4 T)</span>
+</pre>
+</div>
+
+<p>
+如果出于某种原因想让调用者用来指定形参的关键字而不同于实际形参名，可以将形参名替换成一个列表，令其含有调用函数时使用的关键字以及用作形参的名字。e.g.:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">(</span><span style="color: #1CC9D5;">&amp;key</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #74d6fb; font-style: italic;">:apple</span> a<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #74d6fb; font-style: italic;">:box</span> b<span style="color: #9ce55f;">)</span> 0<span style="color: #70c0b1;">)</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #74d6fb; font-style: italic;">:charlie</span> c<span style="color: #9ce55f;">)</span> 0 c-supplied-p<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>list a b c-supplied-p<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span>foo <span style="color: #74d6fb; font-style: italic;">:apple</span> 10 <span style="color: #74d6fb; font-style: italic;">:box</span> 20 <span style="color: #74d6fb; font-style: italic;">:charlie</span> 30<span style="color: #b77cfb;">)</span>
+<span style="color: #ef9433; font-style: italic;">; </span><span style="color: #77b530; font-style: italic;">--&gt; (10 20 30 T)</span>
+</pre>
+</div>
+
+<p>
+这种风格在想要 <span class="underline">将函数的公共API与其内部细节相隔离</span> 时特别有用，通常是因为想要在内部使用短变量名，而不是API中的描述性关键字。<sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline5" class="outline-2">
+<h2 id="orgheadline5">混合不同的形参类型(Mixing Different Parameter Types)</h2>
+<div class="outline-text-2" id="text-orgheadline5">
+<p>
+在单一函数里使用所有四种形参，它们必须以这样的顺序声明: <span class="underline">必要形参</span> ， <span class="underline">可选形参</span> ， <span class="underline">剩余形参</span> ， <span class="underline">关键字形参</span> 。
+</p>
+
+<p>
+在使用多种类型形参的函数中，一般是将 <span class="underline">必要形参</span> 和 <span class="underline">另外一种类型的形参</span> 组合使用，或者可能是组合 <b>&amp;optional</b> 和 <b>&amp;rest</b> 形参。
+</p>
+
+<p>
+<b>&amp;optional</b> 形参和 <b>&amp;rest</b> 形参，当与 <b>&amp;key</b> 形参组合使用时，可能导致奇怪的行为。将 <b>&amp;optional</b> 形参和 <b>&amp;key</b> 形参组合，如果调用者没有为所有可选形参提供值，那么没有得到值的可选形参将吃掉用于关键字形参的关键字和值。如果函数同时使用 <b>&amp;optional</b> 形参和 <b>&amp;key</b> 形参，应该将它变成全部使用 <b>&amp;key</b> 形参的形式，使用关键字形参将会使代码相对易维护和拓展。
+</p>
+
+<p>
+可以安全地组合使用 <b>&amp;rest</b> 形参和 <b>&amp;key</b> 形参，但其行为看起来可能比较奇怪。无论 <b>&amp;rest</b> 还是 <b>&amp;key</b> 出现在形参列表中，都将导致所有出现在必要形参和 <b>&amp;optional</b> 形参之后的那些值被特殊处理——要么作为 <b>&amp;rest</b> 形参被收集到一个形参列表中，要么基于关键字被分配到适当的 <b>&amp;key</b> 形参中。如果 <b>&amp;rest</b> 和 <b>&amp;key</b> 同时出现在形参列表中，那么所有剩余的值，包括关键字本身，都将被收集到一个列表里，然后被绑定到 <b>&amp;rest</b> 形参上，而适当的值，也会被绑定到 <b>&amp;key</b> 形参上。e.g.:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">(</span><span style="color: #1CC9D5;">&amp;rest</span> <span style="color: #e775fd;">rest</span> <span style="color: #1CC9D5;">&amp;key</span> <span style="color: #e775fd;">a</span> <span style="color: #e775fd;">b</span> <span style="color: #e775fd;">c</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>list rest a b c<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span>foo <span style="color: #74d6fb; font-style: italic;">:a</span> 1 <span style="color: #74d6fb; font-style: italic;">:b</span> 2 <span style="color: #74d6fb; font-style: italic;">:c</span> 3<span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; ((:A 1 :B 2 :C 3) 1 2 3)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline6" class="outline-2">
+<h2 id="orgheadline6">参考来源</h2>
+<div class="outline-text-2" id="text-orgheadline6">
+<ul class="org-ul">
+<li><a href="http://www.gigamonkeys.com/book/functions.html">Functions</a>, <i>Practical Common Lisp</i>, by <i>Peter Seibel</i></li>
+<li>《实用Common Lisp编程》－人民邮电出版社，第1版，田春译</li>
+</ul>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">
+实际中该特性不常被用到。
+</p></div></div>
+
+
+</div>
+</div>

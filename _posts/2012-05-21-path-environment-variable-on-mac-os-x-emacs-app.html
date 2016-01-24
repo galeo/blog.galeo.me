@@ -1,0 +1,365 @@
+---
+title: "PATH Environment Variable on Mac OS X &amp; Emacs.app"
+date: 2012-05-21
+layout: post
+tags: OSX emacs
+---
+<p>
+有几次朋友问我晚上的时候在干什么，我开玩笑似地说我在“磨刀”，他或许一下子不解了——我把折腾Emacs当做是磨刀。呵呵，“刀是不能不磨的”……长话短说，本文将介绍Mac OS X和GNU Emacs中的PATH环境变量及其设置方法。
+</p>
+
+<p>
+首先你可能需要先了解一下<a href="http://www.emacswiki.org/emacs/EmacsForMacOS">Emacs For Mac OS</a>。在Mac上，可能很多人偏爱<a href="http://aquamacs.org/">Aquamacs</a>这个发行版，相比较<a href="http://emacsformacosx.com/">GNU Emacs(Cocoa)</a>，它是标准的OS X应用，而且针对Mac系统做了很多的优化和配置，让你使用起来得心应手，非常方便。但是，可能因为我当年第一次接触Emacs遇到的就是GNU Emacs(Cocoa)，到后来再接触了Aquamacs，感觉Aquamacs看起来很不顺眼，而且这种感觉到今天也没有消失掉，我一如既往地对GNU Emacs钟情<sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>。
+</p>
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="envir-var-source-problems"><a id="orgheadline1"></a>问题来源</h2>
+<div class="outline-text-2" id="text-envir-var-source-problems">
+<p>
+很多 *nix 用户对于用户根目录下面同时出现的 <code>.bash_profile</code>  <code>.bashrc</code>  <code>.bash_login</code>  <code>.profile</code> 这几个文件的作用和区别感到迷惑不解，当你想要把一个目录添加进PATH环境变量的时候，可能会不清楚选择哪个文件来操作。当你了解清楚了它们的差异并且明白了它们发生作用的原理之后，回过头来，又要处理Mac OS与传统 *nix 系统的不同<sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>。
+</p>
+
+<p>
+Mac OS X中的Emacs.app<sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup>并不像在其他OS上那样或者像运行在Terminal以及Emacs中的shell，“简单地”继承系统的PATH环境变量，这就需要你额外进行设置。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline4" class="outline-2">
+<h2 id="envir-var-shell-config"><a id="orgheadline4"></a>Shell Configuration</h2>
+<div class="outline-text-2" id="text-envir-var-shell-config">
+<p>
+在类UNIX系统中，你可以通过编辑相应shell启动时执行的 "startup" 文件来自定义shell程序的初始化工作。这些文件一般会被称为 "dot files" ，因为它们的名字经常是以 <code>.</code> (dot) 开始。用户自己的 "dot files" 一般都位于用户的根目录(User's Home folder)<sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>下面，需要你自己使用一个文本编辑器(e.g. vim, nano, emacs etc.)来创建。因为它们的名字都是以 <code>.</code> 开始的，当你执行 <code>ls</code> 时，它们不会被显示，你需要加上 <code>-a</code> 参数，即使用 <code>ls -a</code> 来查看所有文件。如果你只需要列出以 <code>.</code> 开始的文件，可以使用命令 <code>ls -ld .*</code> 。
+</p>
+
+<p>
+Shell startup文件当中经常包含下面一些设置：
+</p>
+
+<ul class="org-ul">
+<li>shell execution PATH (determines where the shell will look for executables)</li>
+<li>MANPATH (determines where the 'man' program will look for man pages)</li>
+<li>shell aliases and functions (used to save you typing)</li>
+<li>shell prompts</li>
+<li>other environment variables</li>
+</ul>
+
+<p>
+至于哪些初始文件会被shell启动时所读取取决于shell类型(e.g. <b>bash</b>, <b>tcsh</b> etc.)以及其是 <b>login shell</b> 还是 <b>non-login shell</b> 。<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup>
+</p>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-3">
+<h3 id="envir-var-shells"><a id="orgheadline2"></a>Login Shell and Non-Login Shell</h3>
+<div class="outline-text-3" id="text-envir-var-shells">
+<p>
+这里我们简单翻译为登录shell和非登录shell，至于为什么称呼 <b>login shell</b> ，是由于历史原因，当用户启动到文本模式的UNIX系统，输入用户口令登录后，shell便会启动。另外， <b>login shell</b> 也指使用 <code>--login</code> 参数启动的shell(<code>bash --login</code>)。以bash为例，下面的引用来自其man page<sup><a id="fnr.6" class="footref" href="#fn.6">6</a></sup>:
+</p>
+<blockquote>
+<p>
+A login shell is one whose first character of argument zero is a -, or one started with the &#x2013;login option.
+</p>
+</blockquote>
+
+<p>
+对于bash，当一个登录shell启动时，它将按照下面的顺序读取初始化文件:
+</p>
+
+<ol class="org-ol">
+<li>/etc/profile</li>
+
+<li>~/.bash_profile</li>
+
+<li>~/.bash_login</li>
+
+<li>~/.profile</li>
+</ol>
+
+<p>
+首先如果 <code>/etc/profile</code> 文件存在，那么登录shell将首先读取它并且执行其中的命令，然后按照顺序搜索 <code>~/.bash_profile</code> <code>~/.bash_login</code> <code>~/.profile</code> ，并且只读取执行其中的一个。
+</p>
+
+<p>
+当一个非登录shell以交互方式启动时，将会读取 <code>/etc/bashrc</code> ，然后寻找并尝试读取执行 <code>~/.bashrc</code> 。<sup><a id="fnr.7" class="footref" href="#fn.7">7</a></sup>
+</p>
+
+<p>
+在Mac OS X中，你在Terminal程序中开启的shell都是登录shell，而当你打开一个xterm(在苹果的X11下)窗口时，你得到的则是非登录shell，这是Terminal和xterm在读取初始化文件方面的主要区别。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline3" class="outline-3">
+<h3 id="envir-var-shell-startup-files"><a id="orgheadline3"></a>Maintain Shell Startup Files</h3>
+<div class="outline-text-3" id="text-envir-var-shell-startup-files">
+<p>
+更多时候，你不想为登录shell和非登录shell同时维护两个配置文件，比如当你改变PATH环境变量的时候，你可能会希望同时应用于两种shell。通过source命令来做到这点。比如，将PATH和其他设置都放到 <code>.bashrc</code> 里面，再让 <code>.bash_profile</code> “引用” <code>.bashrc</code> ，只需要在 <code>.bash_profile</code> 中添加下面的代码:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #FC8C15; font-style: italic;">if</span> [ -f ~/.bashrc ]; <span style="color: #FC8C15; font-style: italic;">then</span>
+   <span style="color: #74d6fb; font-style: italic;">source</span> ~/.bashrc
+<span style="color: #FC8C15; font-style: italic;">fi</span>
+</pre>
+</div>
+
+<p>
+这样，当开启一个登录shell的时候， <code>.bashrc</code> 会被读取并执行，你在其中所作的设置将会生效。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline5" class="outline-2">
+<h2 id="envir-var-mac-runtime-config"><a id="orgheadline5"></a>Mac OS X Runtime Configuration</h2>
+<div class="outline-text-2" id="text-envir-var-mac-runtime-config">
+<p>
+Mac OS X中，程序运行分为两种，一种是使用终端(console)，一种是使用GUI(图形用户界面)，环境变量的设置需要根据不同的程序运行情况来分别设置。
+</p>
+
+<p>
+当你打开Terminal.app，默认你将启动一个bash shell<sup><a id="fnr.8" class="footref" href="#fn.8">8</a></sup>，它将像上文介绍到的那样读取初始化文件。
+</p>
+
+<p>
+我们知道，一般系统级的环境变量包括 <code>PATH</code> 会在 <code>/etc/profile</code> 中设置，当bash启动的时候会被读取。在Mac OS X中， <code>/etc/profile</code> 会使用<a href="https://developer.apple.com/library/mac/#documentation/Darwin/Reference/Manpages/man8/path_helper.8.html">path_helper</a>来设置PATH<sup><a id="fnr.9" class="footref" href="#fn.9">9</a></sup>:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #FC8C15; font-style: italic;">if</span> [ -x /usr/libexec/path_helper ]; <span style="color: #FC8C15; font-style: italic;">then</span>
+    <span style="color: #74d6fb; font-style: italic;">eval</span> <span style="color: #fa8072;">`/usr/libexec/path_helper -s`</span>
+<span style="color: #FC8C15; font-style: italic;">fi</span>
+</pre>
+</div>
+
+<p>
+<b>path_helper</b> 会读取 <code>/etc/paths.d</code> 和 <code>/etc/manpaths.d</code> 目录下的文件内容，将它们添加进相应的 <code>PATH</code> 和 <code>MANPATH</code> 环境变量，这些目录下的文件一般通过单独的一行来指定一个路径。在读取这些目录之前，默认的 <code>PATH</code> 和 <code>MANPATH</code> 的值会从文件 <code>/etc/paths</code> 和 <code>/etc/manpaths</code> 中获得。
+</p>
+
+<p>
+OS X中的窗口程序则会从用户自己的environment.plist文件中获得环境变量，可以参考<a href="http://developer.apple.com/library/mac/#qa/qa1067/_index.html">这里</a>。文件 <code>~/.MacOSX/environment.plist</code> 会由Xcode创建，如果你没有安装Xcode的话，可能需要手动创建(注意大小写敏感)，之后你便可以通过Property List Editor<sup><a id="fnr.10" class="footref" href="#fn.10">10</a></sup>来编辑此文件，修改或者保存键值对。environment.plist可以被窗口程序包括Terminal使用来获得系统的各种环境变量，而你在 <code>.bash_profile</code> 或其他dot文件中做的设置将只会作用于bash或相应的shell。 <b>defaults</b> <sup><a id="fnr.11" class="footref" href="#fn.11">11</a></sup>程序允许对此文件进行读写<sup><a id="fnr.12" class="footref" href="#fn.12">12</a></sup>，比如当你修改了enviroment.plist文件，并使当前shell使用其中 <code>PATH</code> 的值，可以这样:
+</p>
+
+
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #ef9433; font-style: italic;"># </span><span style="color: #77b530; font-style: italic;">bash</span>
+<span style="color: #74d6fb; font-style: italic;">export</span> <span style="color: #e775fd;">PATH</span>=$(<span style="color: #fa8072;">defaults</span> read <span style="color: #ea4f83;">"${HOME}/.MacOSX/environment"</span> PATH)
+
+<span style="color: #ef9433; font-style: italic;"># </span><span style="color: #77b530; font-style: italic;">tcsh</span>
+<span style="color: #74d6fb; font-style: italic;">set</span> <span style="color: #e775fd;">path</span>=(<span style="color: #fa8072;">`defaults read ~/.MacOSX/environment PATH | tr ':' ' '`</span>)
+</pre>
+</div>
+
+<p>
+如果你希望 <code>/etc/profile</code> 中将通过 <code>path_helper</code> 获取的PATH路径的值自动更新到 <code>environment.plist</code> 中去，可以在 <code>/etc/profile</code> 做下面的改动:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #ef9433; font-style: italic;">#</span><span style="color: #77b530; font-style: italic;">/etc/profile begin</span>
+<span style="color: #FC8C15; font-style: italic;">if</span> [ -x /usr/libexec/path_helper ]; <span style="color: #FC8C15; font-style: italic;">then</span>
+    <span style="color: #74d6fb; font-style: italic;">eval</span> <span style="color: #fa8072;">`/usr/libexec/path_helper -s`</span>
+    defaults write $<span style="color: #e775fd;">HOME</span>/.MacOSX/environment PATH <span style="color: #ea4f83;">"$PATH"</span>
+<span style="color: #FC8C15; font-style: italic;">fi</span>
+</pre>
+</div>
+
+
+<p>
+一般情况下，你只需要在 <code>.bash_profile</code> 中设置环境变量而不需要改动 <code>.plist</code> 文件。大多数的Mac OS X窗口程序都不需要任何自定义的环境变量，只在程序实际需要一个特定的环境变量的时候，你才可能有必要修改environment.plist。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline9" class="outline-2">
+<h2 id="envir-var-emacs-set-path"><a id="orgheadline9"></a>Emacs.app set PATH</h2>
+<div class="outline-text-2" id="text-envir-var-emacs-set-path">
+<p>
+首先，根据上文的一系列介绍，我们可以得到关于Emacs如何从OS X中继承环境变量的三点总结:
+</p>
+
+<ul class="org-ul">
+<li>当你从shell中启动emacs的时候，emacs将继承shell的环境变量<sup><a id="fnr.13" class="footref" href="#fn.13">13</a></sup>。</li>
+<li>当你以GUI方式直接启动Emacs.app，emacs将不会从shell那里继承环境变量，而是从 <code>~/.MacOSX/environment.plist</code> 继承。</li>
+<li>当你从shell中以GUI方式启动emacs<sup><a id="fnr.14" class="footref" href="#fn.14">14</a></sup>，emacs也会继承shell的环境变量。</li>
+</ul>
+
+
+<p>
+下面将介绍如何为Emacs设置 <code>PATH</code> 。
+</p>
+</div>
+<div id="outline-container-orgheadline6" class="outline-3">
+<h3 id="envir-var-emacs-within-path"><a id="orgheadline6"></a>Setting PATH within Emacs</h3>
+<div class="outline-text-3" id="text-envir-var-emacs-within-path">
+<p>
+你可以直接为Emacs设置PATH环境变量，而不用以在OS中设置再让Emacs继承的方式。
+</p>
+
+<p>
+使用命令 <code>(getenv "PATH")</code> 将会得到PATH环境变量的值，而 <code>(setenv "PATH" VALUE)</code> 用来将 <code>PATH</code> 设置为指定的字符串。如果你安装了MacPorts，想将其可执行文件目录添加进Emacs的PATH环境变量，可以在Emacs初始化文件中中添加下面的代码:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #b77cfb;">(</span>setenv <span style="color: #ea4f83;">"PATH"</span>
+        <span style="color: #008edd;">(</span>concat
+         <span style="color: #70c0b1;">(</span>getenv <span style="color: #ea4f83;">"PATH"</span><span style="color: #70c0b1;">)</span>
+         <span style="color: #ea4f83;">":""/opt/local/bin"</span>
+         <span style="color: #ea4f83;">":""/opt/local/sbin"</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline7" class="outline-3">
+<h3 id="envir-var-emacs-exec-path"><a id="orgheadline7"></a>Emacs's <code>exec-path</code></h3>
+<div class="outline-text-3" id="text-envir-var-emacs-exec-path">
+<p>
+Emacs拥有一个 <code>exec-path</code> 变量，其值是一个文件目录的列表，当需要在子进程中运行程序的时候，Emacs会通过 <code>exec-path</code> 来寻找可执行文件(e.g. <b>ispell</b> or <b>aspell</b>, <b>diff</b>, <b>grep</b>, <b>shell</b> etc.) 。如果Emacs警告说它无法找到找到 <b>ispell</b> 、 <b>aspell</b> 、 <b>gzip</b> 等可执行文件，可能就是 <code>exex-path</code> 变量的问题。
+</p>
+
+<p>
+默认，Emacs会将 <code>(getenv "PATH")</code> 的值赋给 <code>exec-path</code> ，所以 <code>PATH</code> 和 <code>exec-path</code> 的值会一致。但是二者之间又有区别:
+</p>
+
+<ul class="org-ul">
+<li><code>PATH</code> 的值被Emacs使用如果你在Emacs中开启一个shell(类似于你在终端中运行shell)，或者当Emacs调用一些外部命令时(比如通过 <code>M-x compile</code> 执行编译)。</li>
+<li><code>exec-path</code> 被Emacs自身使用用来寻找可执行文件当你需要使用它的某些特性的时候，例如拼写检查，diff等。</li>
+</ul>
+
+<p>
+当你需要在Emacs中设置 <code>PATH</code> 时，你可能也想一起调整 <code>exec-path</code> ，比如你想要设置使emacs直接从shell那里得到 <code>PATH</code> 的值，并且设置 <code>exec-path</code> ，可以将下面的代码添加到Emacs初始化文件中:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">setq</span> *is-a-mac* <span style="color: #008edd;">(</span>eq system-type <span style="color: #FC8C15; font-style: italic;">'</span><span style="color: #12AEB1; font-style: italic;">darwin</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">string-rtrim</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">str</span><span style="color: #008edd;">)</span>
+  <span style="color: #ea4f83;">"Remove trailing white-space from a string."</span>
+  <span style="color: #008edd;">(</span>replace-regexp-in-string <span style="color: #ea4f83;">"[ \t\n]*$"</span> <span style="color: #ea4f83;">""</span> str<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">set-exec-path-from-shell-PATH</span> <span style="color: #008edd;">()</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">interactive</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #e775fd;">path-from-shell</span>
+         <span style="color: #e7c547;">(</span>string-rtrim
+          <span style="color: #ef9433;">(</span>shell-command-to-string <span style="color: #ea4f83;">"$SHELL --login -i -c 'echo $PATH'"</span><span style="color: #ef9433;">)</span><span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
+    <span style="color: #70c0b1;">(</span>setenv <span style="color: #ea4f83;">"PATH"</span> path-from-shell<span style="color: #70c0b1;">)</span>
+    <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">setq</span> exec-path
+          <span style="color: #9ce55f;">(</span>split-string path-from-shell path-separator<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">when</span> <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">and</span> *is-a-mac* window-system<span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>set-exec-path-from-shell-PATH<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+可以使用 <i>purcell</i> 写的<a href="https://github.com/purcell/exec-path-from-shell">exec-path-from-shell</a>，做法与上面的代码类似，并进行了一些拓展。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline8" class="outline-3">
+<h3 id="envir-var-emacs-shell-path"><a id="orgheadline8"></a>PATH in Emacs shell mode</h3>
+<div class="outline-text-3" id="text-envir-var-emacs-shell-path">
+<p>
+在Emacs中，当你通过 <code>M-x shell</code> 开启一个shell，比如你设定了 <code>shell-file-name</code> 的值为 <code>/bin/bash</code> ，以使Emacs开启bash shell，这时候，bash是一个非登录shell，所以它会在用户根目录下寻找 <code>.bashrc</code> 来进行初始化，你可能需要将一些自定义的设置放到 <code>.bashrc</code> 中。上文中我们提到，这个shell还会继承Emacs中设置的 <code>PATH</code> ，这样就可能使 <code>PATH</code> 中出现重复的目录，比如为了简化维护，你的 <code>.bashrc</code> 中可能仅仅是下面一行内容:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #74d6fb; font-style: italic;">source</span> ~/.profile
+</pre>
+</div>
+
+<p>
+而你在Emacs初始化文件中像这样设置 <code>PATH</code> :
+</p>
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #b77cfb;">(</span>setenv <span style="color: #ea4f83;">"PATH"</span>
+         <span style="color: #008edd;">(</span>shell-command-to-string <span style="color: #ea4f83;">"source $HOME/.profile &amp;&amp; printf $PATH"</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+然后，你用 <code>echo $PATH</code> 来查看 <code>PATH</code> 的值会发现其中很多目录是重复的，让人很不爽。你可以在 <code>.profile</code> 中编写一个函数用来将一个目录添加进 <code>PATH</code> 当且仅当这个目录不在当前的 <code>PATH</code> 中来消除一些重复，或者在 <code>.bashrc</code> 中复制 <code>.profile</code> 的内容，但是去掉相关的 <code>PATH</code> 设置。到目前为止，我还没有找到更好的方法。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline10" class="outline-2">
+<h2 id="envir-var-author-words"><a id="orgheadline10"></a>Author's Words</h2>
+<div class="outline-text-2" id="text-envir-var-author-words">
+<p>
+本文很多内容参考了 <b>EmacsWiki</b> 、 <b>StackOverFlow.com</b> 和 <b>Apple</b> 开发文档的相关主题，转载请注明来源网址: <a href="http://blog.galeo.me/post/23467503436/path-environment-variable-on-mac-os-x-emacs-app">http://blog.galeo.me/post/23467503436/path-environment-variable-on-mac-os-x-emacs-app</a>。
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">
+Emacs 24.1马上就要来了，好期待。后面我可能会写一篇文章，介绍Lisp的词法变量和动态变量，因为elisp在Emacs 24.1版本开始支持词法变量，所以可能顺带着介绍一下Emacs 24.1版本的某些变化。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><p class="footpara">
+虽然Mac OS X经过的UNIX认证，但是一些你在 *nix 系统中习以为常的东西到了OS X里面需要换个脑筋，“Think Different”，然后你会发现OS X在很多方面领先业界。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3">3</a></sup> <div class="footpara"><p class="footpara">
+GNU Emacs在Mac OS X上的发行版，详细请参考上文中的链接。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.4" class="footnum" href="#fnr.4">4</a></sup> <div class="footpara"><p class="footpara">
+用 <code>~</code> 来表示(designated by <code>~</code>)。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.5" class="footnum" href="#fnr.5">5</a></sup> <div class="footpara"><p class="footpara">
+注意:在命令提示符之后输入shell名称(e.g. bash, tcsh)，将会开启一个子shell(sub-shell)，子shell将会继承父shell(parent shell)的环境变量，即使通过 <kbd>--noprofile</kbd> 参数来禁止shell读取初始化文件。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.6" class="footnum" href="#fnr.6">6</a></sup> <div class="footpara"><p class="footpara">
+使用命令 <code>man bash</code> 。同样的，可以使用命令 <code>man tcsh</code> 查看tcsh的man page。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.7" class="footnum" href="#fnr.7">7</a></sup> <div class="footpara"><p class="footpara">
+更多shell启动的细节，请参考man page。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.8" class="footnum" href="#fnr.8">8</a></sup> <div class="footpara"><p class="footpara">
+可以在 <b>Terminal -&gt; Preferences</b> 里面设置shell启动路径。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.9" class="footnum" href="#fnr.9">9</a></sup> <div class="footpara"><p class="footpara">
+注意: <b>path_helper</b> 只能通过shell文件来使用，而不能直接手动调用。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.10" class="footnum" href="#fnr.10">10</a></sup> <div class="footpara"><p class="footpara">
+Property List Editor comes as part of Apple's Developer Tools Xcode 3 package, as of Xcode 4 on Lion, Apple no longer supplies it with its developer tools，不过你可以直接使用Xcode来编辑.plist文件。如果想要在Lion中继续使用Property List Editor，请参考<a href="http://sveinbjorn.org/install_property_list_editor_app_on_mac_os_x_lion">这里</a>，当然还有其他的选择，比如免费的<a href="http://www.nightproductions.net/prefsetter.html">Pref Setter</a>，或者收费的<a href="http://www.fatcatsoftware.com/plisteditpro/">PlistEdit Pro</a>。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.11" class="footnum" href="#fnr.11">11</a></sup> <div class="footpara"><p class="footpara">
+In Terminal, type <code>man defaults</code> for details.
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.12" class="footnum" href="#fnr.12">12</a></sup> <div class="footpara"><p class="footpara">
+注意:当你改动了environment.plist文件之后，你需要重启系统来生效。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.13" class="footnum" href="#fnr.13">13</a></sup> <div class="footpara"><p class="footpara">
+这一点对于Windows，Linux，Mac均适用。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.14" class="footnum" href="#fnr.14">14</a></sup> <div class="footpara"><p class="footpara">
+Like this: <code>nohup /Applications/Emacs.app/Contents/MacOS/Emacs &amp;</code> 。
+</p></div></div>
+
+
+</div>
+</div>

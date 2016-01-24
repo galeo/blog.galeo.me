@@ -1,0 +1,539 @@
+---
+title: "Common Lisp中的变量"
+date: 2012-10-31
+layout: post
+tags: CommonLisp
+series: "Practical Common Lisp"
+---
+<p>
+本篇文章大部分翻译自 <i>Peter Seibel</i> <a href="http://gigamonkeys.com/book/"><b>Practical Common Lisp</b></a> 一书的 <a href="http://gigamonkeys.com/book/variables.html"><b>Variables</b></a> 一章，不包含 <b>常量</b> 、 <b>赋值</b> 和 <b>广义赋值</b> 等后面几个小节的内容。我根据自己的理解对其中某些部分的内容做了增删改。
+</p>
+
+<p>
+Common Lisp是一种词法作用域（lexically scope）的Lisp，它同时支持两种类型的变量： <b>词法（lexical）变量</b> 和 <b>动态（dynamic）变量</b> <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>。
+</p>
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1">（Common Lisp中）变量的基础知识</h2>
+<div class="outline-text-2" id="text-orgheadline1">
+<p>
+在Common Lisp中，一个变量可以保存任何类型的值，并且这些值带有用于运行期类型检查的类型信息<sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>。Common Lisp是动态类型的——类型错误会被动态地检测到。另一方面，Common Lisp是一种 <b>强类型</b> （ <i>strongly typed</i> ）语言，所有的类型错误都将被检测到——无法将一个对象作为其不属于的一种类型的实例来对待。<sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup>
+</p>
+
+<p>
+Lisp中所有符号只有两种状态：绑定和未绑定。<sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>我们定义一个变量的同时，也建立了一个绑定，例如：
+</p>
+<pre class="example">
+CL-USER&gt; (setf S 10)
+10
+CL-USER&gt; S
+10
+</pre>
+
+<p>
+上述过程图形化表示即是：
+</p>
+
+<div class="figure">
+<p><img src="images/symbol-bounding-example.png" alt="symbol-bounding-example.png" />
+</p>
+</div>
+
+<p>
+表达式 <code>(setf S 10)</code> 执行了下面两个步骤：
+</p>
+<ol class="org-ol">
+<li>把符号 <b>S</b> 跟内存中的一存储单元建立起绑定。之后，符号 <b>S</b> 出现的地方就代表（引用）了这一存储单元。</li>
+<li>把符号 <b>S</b> 所引用的存储单元的值设为整数10。我们接着在命令行中敲入S求值时，REPL会依据之前建立起的绑定找到那个存储单元并把值打印出来。</li>
+</ol>
+
+
+<p>
+Common Lisp中所有的值，至少从概念上讲，都是对对象的引用（references）。<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup>将一个变量赋予新值只会改变此变量将引用哪个对象，对其之前引用的对象没有影响。但是，如果一个变量保存了对一个可变对象的引用，你可以用这个引用来修改此对象，而且这种改动将作用于其他引用这个相同对象的代码。<sup><a id="fnr.6" class="footref" href="#fn.6">6</a></sup>
+</p>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-3">
+<h3 id="orgheadline2">函数形参</h3>
+<div class="outline-text-3" id="text-orgheadline2">
+<p>
+引入新变量的一种方式是定义函数行参。当你用 <b>DEFUN</b> 定义一个函数，行参列表定义了用来保存当函数被调用时传给它的实参的变量。例如，下面的函数定义了三个变量—— <b>x</b> 、 <b>y</b> 、 <b>z</b> ， 用来保存它的实参：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">x</span> <span style="color: #e775fd;">y</span> <span style="color: #e775fd;">z</span><span style="color: #008edd;">)</span> <span style="color: #008edd;">(</span>+ x y z<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+每当一个函数被调用时，Lisp会创建新的绑定来保存传递给此函数的实参。绑定是变量在运行期执行的行为。单个变量在程序运行期可以有多个不同的绑定，甚至可以同时有多个绑定，例如，一个递归函数的行参会在每一次函数被调用时被重新绑定。
+</p>
+
+<p>
+和所有的Common Lisp变量一样，函数的行参可以保存对象的引用。<sup><a id="fnr.7" class="footref" href="#fn.7">7</a></sup><sup>, </sup><sup><a id="fnr.8" class="footref" href="#fn.8">8</a></sup>因此，你可以在函数体内为一个函数行参赋予一个新值，这不会影响另一个对此函数调用所创建的绑定。<sup><a id="fnr.9" class="footref" href="#fn.9">9</a></sup>但是，如果传递给此函数的对象是一个可变对象而且你在函数体内改变了这个对象，那么这种改动对于函数调用者将可见，因为调用者和被调用者都在引用同一个对象。<sup><a id="fnr.10" class="footref" href="#fn.10">10</a></sup>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline3" class="outline-3">
+<h3 id="orgheadline3"><b>LET</b> 形式</h3>
+<div class="outline-text-3" id="text-orgheadline3">
+<p>
+引入新变量的另一种方式是使用 <b>LET</b> 特殊操作符。一个 <b>LET</b> 形式的结构看起来像这样：
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">variable*</span><span style="color: #008edd;">)</span>
+  body-form*<span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+其中，每一个 <i>variable</i> 都是一个变量初始化形式——要么是一个含有一个变量名和一个初始值的列表，要么是简单的一个将其初始值设为 <b>NIL</b> 的单独的变量名。下面的 <b>LET</b> 形式会绑定三个变量 <b>x</b> 、 <b>y</b> 和 <b>z</b> 到初始值10、20和 <b>NIL</b> 上：
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span><span style="color: #e775fd;">x</span> 10<span style="color: #70c0b1;">)</span> <span style="color: #70c0b1;">(</span><span style="color: #e775fd;">y</span> 20<span style="color: #70c0b1;">)</span> <span style="color: #e775fd;">z</span><span style="color: #008edd;">)</span>
+  ...<span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+当这个 <b>LET</b> 形式被求值（evaluated）的时候，所有的初始值形式都将首先被求值。在形式体被执行之前新的绑定将被创建并初始化到适当的初始值上。在 <b>LET</b> 形式体中，变量名将引用新创建的绑定。在 <b>LET</b> 形式体执行结束后，这些变量名将重新引用在执行 <b>LET</b> 形式之前它们所引用的内容，如果有的话。
+</p>
+
+<p>
+形式体中最后一个表达式的值将作为 <b>LET</b> 表达式的值返回。和函数行参一样，由 <b>LET</b> 所引入的变量将在每次进入 <b>LET</b> 时被重新绑定。<sup><a id="fnr.11" class="footref" href="#fn.11">11</a></sup>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline4" class="outline-3">
+<h3 id="orgheadline4">绑定形式的作用域</h3>
+<div class="outline-text-3" id="text-orgheadline4">
+<p>
+函数形参和 <b>LET</b> 变量的作用域（变量名可以用来引用其变量绑定的程序区域）被限定在引入这些变量的形式之内。这个形式即函数定义或 <b>LET</b> ，被称为绑定形式。词法变量和动态变量这两种类型的变量使用稍有不同的作用域机制，但这两种情况下其作用域都被其绑定形式所限定。
+</p>
+
+<p>
+如果嵌套地使用绑定形式引入了相同名字的变量，那么内层的变量绑定将覆盖外层的绑定。例如，当下面的函数被调用时，将为形参 <b>x</b> 创建一个绑定来保存其对应的函数实参。第一个 <b>LET</b> 创建了一个带有初始值2的新绑定，内层的 <b>LET</b> 创建了另一个绑定，其初始值为3。右面的竖线标记了每一个绑定的作用域。
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">x</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"Parameter: ~a~%"</span> x<span style="color: #008edd;">)</span>      <span style="color: #77b530; font-style: italic;">; |&lt;------ x&#20026;&#23454;&#21442;</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #e775fd;">x</span> 2<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>                        <span style="color: #77b530; font-style: italic;">; |</span>
+    <span style="color: #70c0b1;">(</span>format t <span style="color: #ea4f83;">"Outer LET: ~a~%"</span> x<span style="color: #70c0b1;">)</span>    <span style="color: #77b530; font-style: italic;">; | |&lt;---- x&#23545;&#24212;&#30340;&#20540;&#20026;2</span>
+    <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #9ce55f;">(</span><span style="color: #e7c547;">(</span><span style="color: #e775fd;">x</span> 3<span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span>                      <span style="color: #77b530; font-style: italic;">; | |</span>
+      <span style="color: #9ce55f;">(</span>format t <span style="color: #ea4f83;">"Inner LET: ~a~%"</span> x<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span> <span style="color: #77b530; font-style: italic;">; | | |&lt;-- x&#23545;&#24212;&#30340;&#20540;3</span>
+    <span style="color: #70c0b1;">(</span>format t <span style="color: #ea4f83;">"Outer LET: ~a~%"</span> x<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>   <span style="color: #77b530; font-style: italic;">; | |</span>
+  <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"Parameter: ~a~%"</span> x<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>     <span style="color: #77b530; font-style: italic;">; |</span>
+</pre>
+</div>
+
+<p>
+每一个对x的引用都将指向最小的封闭作用域中的绑定。一旦程序控制离开了一个绑定形式的作用域，其覆盖的最近的绑定形式就会被解除覆盖， <b>x</b> 将转而指向它。所以，调用 <b>foo</b> 将得到下面的输出结果：
+</p>
+<pre class="example">
+CL-USER&gt; (foo 1)
+Parameter: 1
+Outer LET: 2
+Inner LET: 3
+Outer LET: 2
+Parameter: 1
+NIL
+</pre>
+
+
+<p>
+这里也可以用绑定栈的概念来理解<sup><a id="fnr.12" class="footref" href="#fn.12">12</a></sup>，我们对上面的例子进行分析，当进入Inner LET（即最内层的那个LET操作符）时，符号 <b>x</b> 的绑定栈如下图所示：
+</p>
+
+<div class="figure">
+<p><img src="images/symbol-bounding-stack.png" alt="symbol-bounding-stack.png" />
+</p>
+</div>
+
+<p>
+符号 <b>x</b> 始终使用栈顶的绑定，当程序从  <b>Inner LET</b> 退出回到 <b>Outer LET</b> 时，绑定栈栈顶的绑定3被弹出，绑定2成了栈顶，于是在回到 <b>Outer LET</b> 时打印符号 <b>x</b> 的值便是2。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline5" class="outline-3">
+<h3 id="orgheadline5">其他绑定形式</h3>
+<div class="outline-text-3" id="text-orgheadline5">
+<p>
+引入的新变量名只能用在其之内的其他构造也可以用来作为绑定形式。
+</p>
+
+<p>
+例如， <b>DOTIMES</b> 循环，一种基本的计数循环。它引入了一个变量用来保存每次通过循环是递增的计数器的值。例如下面的循环，将打印数字0到9，它绑定了变量 <b>x</b> ：
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">dotimes</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">x</span> 10<span style="color: #008edd;">)</span> <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"~d "</span> x<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+另一种绑定形式是 <b>LET</b> 的变体 <b>LET*</b> 。二者的区别在于，在 <b>LET</b> 中，变量名只能用在 <b>LET</b> 形式体之内—— <b>LET</b> 形式中变量列表之后的那部分；但在一个 <b>LET*</b> 中，每个变量的初始值形式可以引用那些早先引入到变量列表中的变量。所以，你能写下面的代码：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">let*</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span><span style="color: #e775fd;">x</span> 10<span style="color: #70c0b1;">)</span>
+       <span style="color: #70c0b1;">(</span><span style="color: #e775fd;">y</span> <span style="color: #9ce55f;">(</span>+ x 10<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>list x y<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+但不能这样：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span><span style="color: #e775fd;">x</span> 10<span style="color: #70c0b1;">)</span>
+      <span style="color: #70c0b1;">(</span><span style="color: #e775fd;">y</span> <span style="color: #9ce55f;">(</span>+ x 10<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>list x y<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+不过你可以通过嵌套的 <b>LET</b> 达到相同的效果：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span><span style="color: #e775fd;">x</span> 10<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #e775fd;">y</span> <span style="color: #e7c547;">(</span>+ x 10<span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
+    <span style="color: #70c0b1;">(</span>list x y<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline6" class="outline-2">
+<h2 id="orgheadline6">词法变量和闭包</h2>
+<div class="outline-text-2" id="text-orgheadline6">
+<p>
+默认情况下Common Lisp中所有的绑定形式引入的都是词法作用域变量。词法作用域变量只能被文本上位于绑定形式之内的代码所引用。
+</p>
+
+<p>
+Common Lisp中将词法作用域和嵌套函数结合在一起时，按照词法作用域的规则，只有文本上位于绑定形式之内的代码可以引用词法变量，但是如果一个匿名函数包含了一个对于封闭区域内的词法变量的引用，例如下面的表达式：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span><span style="color: #e775fd;">count</span> 0<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  #'<span style="color: #008edd; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #70c0b1; font-style: italic;">()</span>
+<span style="color: #12AEB1; font-style: italic;">      </span><span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">setf count </span><span style="color: #9ce55f; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">1+ count</span><span style="color: #9ce55f; font-style: italic;">)</span><span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd; font-style: italic;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+依据词法作用域的规则， <b>lambda</b> 形式中对于 <b>count</b> 的引用是合法的。当这个含有引用的匿名函数作为 <b>LET</b> 形式的值被返回，通过 <b>FUNCALL</b> ，被不在 <b>LET</b> 作用域之内的代码所调用，这样会发生什么？正如你将看到的那样，如果 <b>count</b> 是一个词法变量，代码正常工作，控制流进入 <b>LET</b> 形式时所创建的 <b>count</b> 绑定根据需要将被尽可能长时间得保持下来，只要某处保留了一个对 <b>LET</b> 形式返回的函数对象的引用。这个匿名函数被称为一个 <b>闭包</b> ，因为它封装了由 <b>LET</b> 创建的绑定。<sup><a id="fnr.13" class="footref" href="#fn.13">13</a></sup>
+</p>
+
+<p>
+理解闭包的关键在于，被捕捉的是 <b>绑定</b> 而不是变量名所引用的对象的值。因此，一个闭包不仅能访问其封装的变量的值，还可以在闭包被不断调用时赋予其新值。例如，你可以将前面表达式所创建的闭包赋给一个全局变量：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defparameter</span> <span style="color: #e775fd;">*fn*</span> <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #e775fd;">count</span> 0<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
+                     #'<span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #9ce55f; font-style: italic;">()</span>
+<span style="color: #12AEB1; font-style: italic;">                         </span><span style="color: #9ce55f; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">setf count </span><span style="color: #e7c547; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">1+ count</span><span style="color: #e7c547; font-style: italic;">)</span><span style="color: #9ce55f; font-style: italic;">)</span><span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+然后，每一次你调用它时，count的值将被加1：
+</p>
+<pre class="example">
+CL-USER&gt; (funcall *fn*)
+1
+CL-USER&gt; (funcall *fn*)
+2
+CL-USER&gt; (funcall *fn*)
+3
+</pre>
+
+<p>
+单独一个闭包可以简单地通过引用来封装多个变量绑定。多个闭包也可以捕捉一个相同的绑定。例如，下面的表达式返回了一个由三个闭包组成的列表，一个闭包用来递增其所闭合的 <b>count</b> 绑定的值，另一个递减它，还有一个返回 <b>count</b> 绑定的当前的值：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span><span style="color: #e775fd;">count</span> 0<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>list
+   #'<span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #9ce55f; font-style: italic;">()</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #9ce55f; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">incf count</span><span style="color: #9ce55f; font-style: italic;">)</span><span style="color: #70c0b1; font-style: italic;">)</span>
+   #'<span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #9ce55f; font-style: italic;">()</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #9ce55f; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">decf count</span><span style="color: #9ce55f; font-style: italic;">)</span><span style="color: #70c0b1; font-style: italic;">)</span>
+   #'<span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #9ce55f; font-style: italic;">()</span><span style="color: #12AEB1; font-style: italic;"> count</span><span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline7" class="outline-2">
+<h2 id="orgheadline7">动态变量（Dynamic, a.k.a. Special, Variables）</h2>
+<div class="outline-text-2" id="text-orgheadline7">
+<p>
+词法绑定通过限制变量的作用域使代码易于理解。但是，有时候仍然需要一个全局变量——一个从程序的任何位置都可以引用到的变量。随意使用全局变量将使代码变得杂乱无章，就像毫无节制地使用 <b>goto</b> 那样，但全局变量有其合理的用途并以某种形式存在于几乎每一种程序语言当中。正如你即将看到的，Lisp的全局变量和动态变量，都更加有用并且更易于管理。
+</p>
+
+<p>
+Common Lisp提供两种方式来创建全局变量： <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 。两种方式都接受一个变量名，一个初始值和一个可选的文档字符串。在被 <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 定义之后，该变量名将可以在任何地方使用来引用全局变量的当前绑定。全局变量习惯上被命名为以 <code>*</code> 开始和结束，遵守该命名约定非常重要。 <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 的示例如下：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defvar</span> <span style="color: #e775fd;">*count*</span> 0
+  <span style="color: #ea4f83;">"Count of widgets made so far."</span><span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defparameter</span> <span style="color: #e775fd;">*gap-tolerance*</span> 0.001
+  <span style="color: #ea4f83;">"Tolerance to be allowed in widget gaps."</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+这两种形式的区别在于 <b>DEFPARAMETER</b> 总是将初始值赋予定义的变量，而 <b>DEFVAR</b> 只会在变量未定义时才这样做。 <b>DEFVAR</b> 形式也可以不带初始值来使用，用于定义一个没有初始值的全局变量。这样的变量称为未绑定的（ <i>unbound</i> ）。
+</p>
+
+<p>
+从实践上讲，应该使用 <b>DEFVAR</b> 来定义那些包含你想持久使用的数据的变量，即是你已经改动了使用此变量的代码。例如，假设前面定义的两个变量是一个用来控制工厂组件生产程序的一部分，使用 <b>DEFVAR</b> 来定义 <b>count</b> 变量就比较合适，因为到目前为止生产的组件的数量不会因为你改动了组件生产的代码就变得无效。<sup><a id="fnr.14" class="footref" href="#fn.14">14</a></sup>
+</p>
+
+<p>
+另一方面，假设变量 <b>gap-tolerance</b> 对生产组件的代码的行为有影响。假如你觉着你需要一个或紧或松的容差值，然后改动了 <b>DEFPARAMETER</b> 形式中的值，那么就要在重新编译或者加载文件时使这一改变产生效果。
+</p>
+
+<p>
+使用 <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 定义了一个变量之后，你就可以在任何地方来引用它。例如，可以定义下面的函数来递增已经生产的组件的数量：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">increment-widget-count</span> <span style="color: #008edd;">()</span>
+  <span style="color: #008edd;">(</span>incf *count*<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+全局变量的优势在于不用到处传递它们。
+</p>
+
+<p>
+所有的全局变量都是动态变量。
+</p>
+
+<p>
+从概念上说，为一个动态变量创建的新绑定会被压入一个为此变量设置的绑定栈中，对该变量的引用总是使用最新的绑定，当一个绑定形式返回时，它所创建的绑定会被从栈上弹出，从而暴露出前一个绑定。<sup><a id="fnr.15" class="footref" href="#fn.15">15</a></sup>
+</p>
+
+<p>
+一个简单的揭示其如何工作的例子：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defvar</span> <span style="color: #e775fd;">*x*</span> 10<span style="color: #b77cfb;">)</span>
+
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">()</span>
+  <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"X: ~d~%"</span> *x*<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+上面这个 <b>DEFVAR</b> 为变量 <b>x</b> 创建了一个到数值10的绑定，函数 <b>foo</b> 中对 <b>x</b> 的引用将动态地查找其当前绑定，如果你从顶层调用 <b>foo</b> ，由 <b>DEFVAR</b> 创建的全局绑定就是唯一可用的绑定，所以它将打印出10：
+</p>
+<pre class="example">
+CL-USER&gt; (foo)
+X: 10
+NIL
+</pre>
+
+<p>
+但是你可以用 <b>LET</b> 创建临时的绑定来覆盖全局的绑定，这样 <b>foo</b> 将打印一个不同的值：
+</p>
+<pre class="example">
+CL-USER&gt; (let ((*x* 20)) (foo))
+X: 20
+NIL
+</pre>
+
+<p>
+现在不使用 <b>LET</b> 再调用 <b>foo</b> ，它将再次看到全局绑定：
+</p>
+<pre class="example">
+CL-USER&gt; (foo)
+X: 10
+NIL
+</pre>
+
+<p>
+现在定义另一个函数：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">bar</span> <span style="color: #008edd;">()</span>
+  <span style="color: #008edd;">(</span>foo<span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #e775fd;">*x*</span> 20<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span> <span style="color: #70c0b1;">(</span>foo<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>foo<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+注意中间的那个对函数 <b>foo</b> 的调用被包含在一个将 <b>x</b> 绑定到新值20的 <b>LET</b> 中，运行 <b>bar</b> 得到的结果如下：
+</p>
+<pre class="example">
+CL-USER&gt; (bar)
+X: 10
+X: 20
+X: 10
+NIL
+</pre>
+
+<p>
+可一看到，第一次对 <b>foo</b> 的调用看到的是全局绑定，其值为10。但中间的那个调用看到的却是新的绑定，其值为20。在 <b>LET</b> 之后， <b>foo</b> 再次看到了全局绑定。
+</p>
+
+<p>
+和词法绑定一样，赋予新值仅仅影响当前绑定。为了理解这点，可以重定义包含一个对 <b>x</b> 赋值的 <b>foo</b> ：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">()</span>
+  <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"Before assignment~18tX: ~d~%"</span> *x*<span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>setf *x* <span style="color: #70c0b1;">(</span>+ 1 *x*<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
+  <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"After assignment~18tX: ~d~%"</span> *x*<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+</pre>
+</div>
+
+<p>
+现在 <b>foo</b> 打印 <b>x</b> 的值，对其递增，然后再次打印它。如果只运行 <b>foo</b> ，将看到这样的结果：
+</p>
+<pre class="example">
+CL-USER&gt; (foo)
+Before assignment X: 10
+After assignment  X: 11
+NIL
+</pre>
+
+<p>
+看起来挺正常，现在运行 <b>bar</b> ：
+</p>
+<pre class="example">
+CL-USER&gt; (bar)
+Before assignment X: 11
+After assignment  X: 12
+Before assignment X: 20
+After assignment  X: 21
+Before assignment X: 12
+After assignment  X: 13
+NIL
+</pre>
+
+<p>
+注意 <b>x</b> 从11开始——之前的 <b>foo</b> 调用改变了全局的值。 <b>bar</b> 里面第一次调用 <b>foo</b> 将这个全局绑定的值递增到了12。中间的调用因为 <b>LET</b> 没有看到全局绑定。最后一个对 <b>foo</b> 的调用再次看到了全局绑定，并将其从12递增到了13。
+</p>
+
+<p>
+那么它是怎样工作的？ <b>LET</b> 是如何知道在它绑定 <b>x</b> 时打算创建的是动态绑定而不是词法绑定？这是因为该名称已经被声明为特殊的（special）了。<sup><a id="fnr.16" class="footref" href="#fn.16">16</a></sup>每一个由 <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 所定义的变量，其名字都将被自动声明为全局特殊的。这意味着无论何时你在一个绑定形式—— <b>LET</b> 或着函数形参或者其他任何创建了新的变量绑定的构造——中使用这样一个名字，其所创建的绑定都将是一个动态绑定。这就是为什么 <b>命名约定</b> 如此重要——如果你使用了一个你认为是词法变量而它却恰好是全局特殊的变量就很不好。一方面，你调用的代码可能在你意料之外改变此变量绑定的值；另一方面，你可能会覆盖一个由绑定栈的上一级代码所建立的绑定。如果你总是按照 <kbd>*</kbd> 命名约定来命名全局变量，你将永远不会意外地在你想要建立一个词法绑定的地方使用一个动态绑定。
+</p>
+
+<p>
+也有可能将一个变量声明为局部特殊的。如果你在一个绑定形式中声明一个名字是特殊的，那么建立在这个变量上的绑定就是动态的而不是词法的。其他代码为了引用动态绑定可以局部地声明一个特殊的名字。但是，局部特殊变量相对使用得较少，所以你不需要担心它们。<sup><a id="fnr.17" class="footref" href="#fn.17">17</a></sup>
+</p>
+
+<p>
+动态绑定使全局变量更易于管理，但重要的是要注意到它们仍然允许超距行为（ <i>action at a distance</i> ）。绑定一个全局变量具有两种超距效果——它可以改变下游代码的行为，也开启了下游代码可以为一个由栈的上一级所建立的绑定赋予新值的可能性。你应该只在需要利用这两个特性的时候才使用动态变量。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline8" class="outline-2">
+<h2 id="orgheadline8">其他参考来源</h2>
+<div class="outline-text-2" id="text-orgheadline8">
+<ol class="org-ol">
+<li>《实用Common Lisp编程》－人民邮电出版社，第1版，田春译</li>
+
+<li>《On Lisp中文版》 － 田春等译</li>
+
+<li><a href="http://blog.jqian.net/post/14212943342/dynamic-and-lexical-binding">静态绑定和动态绑定</a></li>
+<li><a href="http://www.starming.com/index.php?action=plugin&amp;v=wave&amp;tpl=union&amp;ac=viewgrouppost&amp;gid=33006&amp;tid=18102">Common Lisp 变量作用域</a></li>
+</ol>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">
+动态变量有时也称为特殊变量（special variable）。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><p class="footpara">
+<a href="/%E5%8F%98%E9%87%8F%E7%9A%84%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86-variable-basics.html">前面的文章</a>介绍了这点。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3">3</a></sup> <div class="footpara"><p class="footpara">
+事实上，所有的类型错误都将被检测到这种说法并不是很准确——通过使用可选的声明来告诉编译器特定的变量将总会包含一种特殊类型的对象，从而关闭在一个特定代码区域内的运行时类型检查，这种做法是可能的。但是，这类声明通常用在代码开发和调试过后的优化当中，而不是在正常的开发期间。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.4" class="footnum" href="#fnr.4">4</a></sup> <div class="footpara"><p class="footpara">
+同样请参考<a href="/%E5%8F%98%E9%87%8F%E7%9A%84%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86-variable-basics.html">前文</a>关于绑定的概念。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.5" class="footnum" href="#fnr.5">5</a></sup> <div class="footpara"><p class="footpara">
+原文是 <code>All values in Common Lisp are, conceptually at least, references to objects.</code> 作为对特定类型的对象的一种优化，例如处于特定大小之下的整数以及字符，可能会被直接地表示在内存当中，而不是像其他对象那样会用一个指向实际对象的指针来代表。但是因为整数和字符都是不可修改的，所以是否存在引用同一个对象的多个不同的变量副本就无关紧要了。这就是形成 <b>EQ</b> 和 <b>EQL</b> 之间本质区别的原因——数字和字符的对象标识取决于特定Lisp平台的实现方式， <b>EQL</b> 可以保证当相同类型的两个不同对象用来表示相同的数字或者字符时二者是等价的。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.6" class="footnum" href="#fnr.6">6</a></sup> <div class="footpara"><p class="footpara">
+译者注：注意为变量赋予新值和修改变量引用的对象是两个概念。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.7" class="footnum" href="#fnr.7">7</a></sup> <div class="footpara"><p class="footpara">
+Common Lisp函数是“传值的”，但这些被传递的值是对对象的引用。这跟Java和Python的工作方式相似。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.8" class="footnum" href="#fnr.8">8</a></sup> <div class="footpara"><p class="footpara">
+译者注：想要更好的理解，可以参考维基百科对<a href="http://en.wikipedia.org/wiki/Evaluation_strategy">evalution strategy</a>的解释。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.9" class="footnum" href="#fnr.9">9</a></sup> <div class="footpara"><p class="footpara">
+这里，函数行参变量具有词法作用域。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.10" class="footnum" href="#fnr.10">10</a></sup> <div class="footpara"><p class="footpara">
+注意参考脚注6。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.11" class="footnum" href="#fnr.11">11</a></sup> <div class="footpara"><p class="footpara">
+<b>LET</b> 形式和函数形参中的变量是以完全相同的机制创建的。事实上，在某些Lisp方言中，不是Common Lisp， <b>LET</b> 只是一个展开到一个匿名函数调用的宏。也就是说，在那些方言中， <code>(let ((x 10)) (format t "~a" x))</code> 是一个展开到下列结果的宏： <code>((lambda (x) (format t "~a" x)) 10)</code> 。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.12" class="footnum" href="#fnr.12">12</a></sup> <div class="footpara"><p class="footpara">
+任何一个符号都拥有一个绑定栈。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.13" class="footnum" href="#fnr.13">13</a></sup> <div class="footpara"><p class="footpara">
+译者注：可以理解为在Common Lisp的闭包中，一个变量绑定可以超过其作用域。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.14" class="footnum" href="#fnr.14">14</a></sup> <div class="footpara"><p class="footpara">
+如果你特意想要重新设定一个由 <b>DEFVAR</b> 定义的变量，你可以直接使用 <b>SETF</b> 直接设定它，或者先使用 <b>MAKUNBOUND</b> 将其变成未绑定的，然后再使用 <b>DEFVAR</b> 形式重新求值。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.15" class="footnum" href="#fnr.15">15</a></sup> <div class="footpara"><p class="footpara">
+标准并未指定如何在Common Lisp中使用多线程，但所有提供多线程的实践都遵循了由Lisp机所建立的原则，在每个线程的基础上创建动态绑定，一个对全局变量的引用将查找当前线程中最近建立的绑定，或是全局绑定。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.16" class="footnum" href="#fnr.16">16</a></sup> <div class="footpara"><p class="footpara">
+这就是动态变量有时会被称为特殊变量的原因。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.17" class="footnum" href="#fnr.17">17</a></sup> <div class="footpara"><p class="footpara">
+如果你一定想知道，你可以在 <b>HyperSpec</b> 上查找 <b>DECLARE</b> 、 <b>SPECIAL</b> 和 <b>LOCALLY</b> 。
+</p></div></div>
+
+
+</div>
+</div>

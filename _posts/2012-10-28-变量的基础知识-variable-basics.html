@@ -1,0 +1,251 @@
+---
+title: "变量的基础知识（Variable Basics）"
+date: 2012-10-28
+layout: post
+tags: CommonLisp
+series: "Practical Common Lisp"
+---
+<p>
+本文将介绍一些变量的基础知识，大部分内容是对英文维基百科关于计算机科学中<a href="http://en.wikipedia.org/wiki/Variable_(computer_science)">变量</a>和<a href="http://en.wikipedia.org/wiki/Scope_(computer_science)">作用域</a>的解释的翻译，我根据自己的理解做了一些修改。想要了解更详细的内容请直接参考维基百科。
+</p>
+
+<p>
+维基百科对 <b>变量（Variable）</b> 的解释：
+</p>
+<blockquote>
+<p>
+In computer programming, a <b>variable</b> is a <a href="http://en.wikipedia.org/wiki/Memory_location">storage location</a> and an associated symbolic name (an <a href="http://en.wikipedia.org/wiki/Identifier#In_computer_languages">identifier</a>) which contains some known or unknown quantity or information, a value.The variable name is the usual way to <a href="http://en.wikipedia.org/wiki/Reference_(computer_science)">reference</a> the stored value; this separation of name and content allows the name to be used independently of the exact information it represents. The identifier in computer source code can be <a href="http://en.wikipedia.org/wiki/Name_binding">bound</a> to a value during <a href="http://en.wikipedia.org/wiki/Run_time_(program_lifecycle_phase)">run time</a>, and the value of the variable may thus change during the course of program execution&#x2026;
+</p>
+
+<p>
+A variable storage location may be referred by several different identifiers, a situation known as <a href="http://en.wikipedia.org/wiki/Aliasing_(computing)">aliasing</a>. Assigning a value to the variable using one of the identifiers will change the value that can be accessed through the other identifiers.
+</p>
+
+<p>
+&#x2026; &#x2026;
+</p>
+</blockquote>
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1">绑定（Binding）</h2>
+<div class="outline-text-2" id="text-orgheadline1">
+<p>
+维基百科对<a href="http://en.wikipedia.org/wiki/Name_binding">绑定</a>的解释：
+</p>
+<blockquote>
+<p>
+In programming languages, name binding is the association of objects (data and/or code) with identifiers. An identifier bound to an object is said to reference that object&#x2026;Binding is intimately connected with <a href="http://en.wikipedia.org/wiki/Scope_(programming)">scoping</a>, as scope determines which names bind to which objects - at which locations in the program code (lexically) and in which one of the possible execution paths (temporally).
+</p>
+
+<p>
+Use of an identifier <b>id</b> in a context that establishes a binding for <b>id</b> is called a binding (or defining) occurrence. In all other occurrences (e.g., in expressions, assignments, and subprogram calls), an identifier stands for what it is bound to&#x2026;
+</p>
+</blockquote>
+
+<p>
+绑定是变量名（变量标识符）和对象（保存于内存中的存储单元）的映射关系。为变量建立绑定之后，就可以通过变量名来引用其所绑定的值。绑定的具体含义，可以参考下图：
+</p>
+
+
+<div class="figure">
+<p><img src="images/symbol-bounding.png" alt="symbol-bounding.png" />
+</p>
+</div>
+
+
+<p>
+在C语言里面，上图中的变量名就是一个指针，指向内存中的某一存储单元。
+</p>
+
+<p>
+下面两种情况下的变量被称为是“未绑定”的：
+</p>
+<blockquote>
+<p>
+A variable whose scope begins before its extent does is said to be <a href="http://en.wikipedia.org/wiki/Uninitialized_variable">uninitialized</a> and often has an undefined, arbitrary value if accessed (see <a href="http://en.wikipedia.org/wiki/Wild_pointer">wild pointer</a>), since it has yet to be explicitly given a particular value. A variable whose extent ends before its scope does may become a <a href="http://en.wikipedia.org/wiki/Dangling_pointer">dangling pointer</a> and deemed uninitialized once more since its value has been destroyed.
+</p>
+</blockquote>
+
+<p>
+即变量在其作用域内未被赋值或者它的值在变量的生存周期早于其作用域结束时而被销毁掉了。<sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>在很多语言中，试图使用未绑定的变量将导致错误发生。
+</p>
+
+<p>
+绑定是一个时空上的概念，即变量有它的生存期和作用域，生存期关注时间而作用域关注空间。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2">生存期（extent）</h2>
+<div class="outline-text-2" id="text-orgheadline2">
+<p>
+变量的 <b>生存期</b> 表示变量在程序运行过程中具有实际意义的值的时间范围，在运行时，每次变量与值的绑定都具有自己的生存周期。绑定的生存周期是程序执行过程中的一段时间，在这段时间内，变量始终被关联到相同的值或者内存位置。在闭包的情况中，运行中的程序可能进入和离开某个生存周期很多次。
+</p>
+
+<p>
+变量的生存期会受变量名字的作用域的影响。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline3" class="outline-2">
+<h2 id="orgheadline3">作用域（scope）</h2>
+<div class="outline-text-2" id="text-orgheadline3">
+<p>
+维基百科对<a href="http://en.wikipedia.org/wiki/Scope_(computer_science)">作用域</a>的解释：
+</p>
+<blockquote>
+<p>
+In computer programming, a <b>scope</b> is the context within a <a href="http://en.wikipedia.org/wiki/Computer_program">computer program</a> in which a variable name or other identifier is valid and can be used, or within which a <a href="http://en.wikipedia.org/wiki/Declaration_(computer_programming)">declaration</a> has effect. Outside of the scope of a variable name, the variable's value may still be stored, and may even be accessible in some way, but the name does not refer to it; that is, the name is not bound to the variable's storage.
+</p>
+</blockquote>
+
+<p>
+前面对 <b>绑定</b> 的解释可以帮助理解 <b>作用域</b> 的概念。
+</p>
+
+<p>
+变量的 <b>作用域</b> 表示变量在程序的文本中能被使用的范围，在这一范围内，该变量的名字是有意义的并且变量是“可见的”。
+</p>
+
+<p>
+通常在进入变量的作用域时，变量开始它的生命周期；而在离开其作用域时，变量会结束它的生命周期。例如，某个拥有词法作用域的变量仅在特定的语句块或者子程序中才有意义。
+</p>
+
+<p>
+只在某个特定函数中才能访问的变量被称为<a href="http://en.wikipedia.org/wiki/Local_variable">局部变量</a>，一个拥有不确定的（indefinite）作用域在程序的任何一个地方都能引用的变量被称为<a href="http://en.wikipedia.org/wiki/Global_variable">全局变量</a>。
+</p>
+
+<p>
+这里需要了解局部变量和全局变量与词法变量（lexical variable）和动态变量（dynamic variable）的区别。在某些语言当中这几乎是没有区别，在那些语言中局部变量几乎总是词法变量，而全局变量总是动态变量。
+</p>
+
+<p>
+在往下继续之前，我们先看一个例子：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #e775fd;">x</span>=1
+<span style="color: #FC8C15; font-style: italic;">function</span> <span style="color: #4AE2CA; font-weight: bold;">g</span> () { <span style="color: #74d6fb; font-style: italic;">echo</span> $<span style="color: #e775fd;">x</span> ; <span style="color: #e775fd;">x</span>=2 ; }
+<span style="color: #FC8C15; font-style: italic;">function</span> <span style="color: #4AE2CA; font-weight: bold;">f</span> () { <span style="color: #74d6fb; font-style: italic;">local</span> <span style="color: #e775fd;">x</span>=3 ; g ; }
+f <span style="color: #ef9433; font-style: italic;"># </span><span style="color: #77b530; font-style: italic;">does this print 1, or 3?</span>
+<span style="color: #74d6fb; font-style: italic;">echo</span> $<span style="color: #e775fd;">x</span> <span style="color: #ef9433; font-style: italic;"># </span><span style="color: #77b530; font-style: italic;">does this print 1, or 2?</span>
+</pre>
+</div>
+
+<p>
+考虑上面的代码，第一行，创建了一个全局变量 <b>x</b> 并初始化其值为1。第二行，定义了一个函数 <b>g</b> ，它将打印（“回显”）当前 <b>x</b> 的值，然后设置 <b>x</b> 为2（重写前面的值）。第三行，定义了一个函数 <b>f</b> ，并创建了一个局部变量 <b>x</b> （隐藏掉相同命名的全局变量）并初始化其值为3，然后调用函数 <b>g</b> 。第四行，调用函数 <b>f</b> 。最后第五行，打印 <b>x</b> 的当前值。
+</p>
+
+<p>
+那么，这个程序到底会打印什么呢？这要取决于其所使用的作用域规则，也就是我们接下来探讨的内容。
+</p>
+</div>
+
+<div id="outline-container-orgheadline4" class="outline-3">
+<h3 id="orgheadline4">词法作用域（lexical scoping）</h3>
+<div class="outline-text-3" id="text-orgheadline4">
+<p>
+词法作用域又叫静态作用域（static scope）。顾名思义，词法变量即是使用词法作用域的变量。在词法作用域里，一个变量的变量名只能在一个函数或一段代码区域（ <i>block</i> ）内存在，此时变量名才会绑定到变量的值。词法变量拥有不确定的生存期，即从时间上来讲，一个词法变量可以在任意的时间里持续存在，取决于该变量需要被使用(reference)多久。
+</p>
+
+<p>
+词法作用域里，对于函数体中的一个符号，不会逐层检查函数的调用链，而是检查函数定义时的外部环境，即捕捉的是函数定义时该符号的绑定。
+</p>
+
+<p>
+在前面的程序当中，如果它使用的是词法作用域，那么函数 <b>g</b> 将打印和修改全局变量 <b>x</b> 的值（因为函数 <b>g</b> 是在函数 <b>f</b> 之外定义的），所以程序将打印1和2。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline5" class="outline-3">
+<h3 id="orgheadline5">动态作用域（dynamic scoping<sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>）</h3>
+<div class="outline-text-3" id="text-orgheadline5">
+<p>
+使用动态作用域的变量叫做动态(dynamic)变量，有时也叫做特殊(special)变量。动态作用域里，每个变量名（变量标识符）都拥有一个全局的绑定栈。引入一个与动态变量同名的局部变量会为此变量名创建一个新的变量绑定并将其压入此变量名的全局绑定栈中，一个全局的变量名（变量标识符）总是引用当前其栈顶的绑定，当使用该变量绑定的代码执行完毕（即程序控制流离开了此变量的作用域），该变量绑定就会从此变量名的全局绑定栈中被弹出，该变量绑定就失效了。注意，这在编译期是无法做到的，因为绑定栈只存在于运行期，这就是为什么称此类作用域为动态作用域了。
+</p>
+
+<p>
+动态作用域表示的范围是不确定的<sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup>，可从任何位置访问一个动态变量，取决于它们在什么地方被绑定。动态变量拥有动态的生存期。因容易引起误会而需要注意的是，不确定的作用域和动态生存期的组合经常被错误地称为动态作用域（dynamic scope）。
+</p>
+
+<p>
+动态作用域里，函数执行遇到一个符号，会由内向外逐层检查函数的调用链，并打印第一次遇到的那个绑定的值。最外层的绑定即是全局状态下的那个值。
+</p>
+
+<p>
+再回到前面的程序当中，如果其使用的是动态作用域，那么函数 <b>g</b> 将打印和修改函数 <b>f</b> 的局部变量 <b>x</b> （因为函数 <b>g</b> 是在函数 <b>f</b> 之内调用的），所以程序将打印3然后打印1。<sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline6" class="outline-3">
+<h3 id="orgheadline6">一些注意</h3>
+<div class="outline-text-3" id="text-orgheadline6">
+<p>
+除非程序语言提供垃圾收集（ <i>garbage collection</i> ）特性，否则一个在其作用域外但仍然处于其生存周期中的变量会导致内存泄漏（ <i>memory leak</i> ）。
+</p>
+
+<p>
+使变量的作用域尽可能的小，被认为是好的编程方式，这样程序的不同部分就不会因为意外的改变对方的变量而互相影响了。这样做会防止超距作用（ <i>action at a distance</i> ）<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup>。实现上述目标的通常技术是让程序的不同部分使用不同名字空间，或者通过<a href="http://en.wikipedia.org/wiki/Scope_(programming)#Dynamic_scoping">动态作用域变量</a>及<a href="http://en.wikipedia.org/wiki/Scope_(programming)#Lexical_scoping">词法作用域变量</a>使用各自的变量私有化。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline7" class="outline-2">
+<h2 id="orgheadline7">类型（Typing）</h2>
+<div class="outline-text-2" id="text-orgheadline7">
+<p>
+在<a href="http://en.wikipedia.org/wiki/Static_typing#Static_typing">静态类型</a>的语言当中，比如Java，一个变量拥有一种类型，只有特定种类的值才能存储到该变量中。
+</p>
+
+<p>
+在<a href="http://en.wikipedia.org/wiki/Dynamic_typing">动态类型</a>的语言当中，不需要为每一个变量声明其可以保存的对象的类型。比如在Python中，是由变量的值而不是由变量来携带类型信息；在Common Lisp中，这两种情况同时存在：变量在编译时具有一个类型（如果没有声明，就假设这个类型为超类型（supertype） <b>T</b> <sup><a id="fnr.6" class="footref" href="#fn.6">6</a></sup>）；值也有类型，该类型可以在运行期进行检查和识别。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline8" class="outline-2">
+<h2 id="orgheadline8">其他参考来源</h2>
+<div class="outline-text-2" id="text-orgheadline8">
+<ol class="org-ol">
+<li><a href="http://gigamonkeys.com/book/variables.html">Practical Common Lisp - Variables</a> - <i>by</i> <i>Peter Seibel</i></li>
+<li><a href="http://blog.jqian.net/post/14212943342/dynamic-and-lexical-binding">静态绑定和动态绑定</a></li>
+<li><a href="http://www.starming.com/index.php?action=plugin&amp;v=wave&amp;tpl=union&amp;ac=viewgrouppost&amp;gid=33006&amp;tid=18102">Common Lisp 变量作用域</a></li>
+</ol>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">
+这类变量也可以被称做是在其“生存周期外”（ <i>out of extent</i> ）。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><p class="footpara">
+or called <i>dynamic scope</i>.
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3">3</a></sup> <div class="footpara"><p class="footpara">
+不确定的作用域。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.4" class="footnum" href="#fnr.4">4</a></sup> <div class="footpara"><p class="footpara">
+这就是它的执行结果，这个程序的语言是 <b>Bash</b> ，它使用的是动态作用域，所以程序将打印3然后打印1。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.5" class="footnum" href="#fnr.5">5</a></sup> <div class="footpara"><p class="footpara">
+可以参考维基百科关于<a href="http://en.wikipedia.org/wiki/Action_at_distance_(computer_science)">Action at a distance</a>的解释。
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.6" class="footnum" href="#fnr.6">6</a></sup> <div class="footpara"><p class="footpara">
+可以参考<a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_t.htm#t">HyperSpec中的解释</a>。
+</p></div></div>
+
+
+</div>
+</div>
