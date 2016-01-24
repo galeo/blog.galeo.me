@@ -18,11 +18,11 @@
               <li>
                 {% if page.url == node[1][0] %}
                   <a href="{{ node[1][0] }}" class="active">
-                    <span class="link-name">{{node[0]}}</span>
+                    <span class="link-name">{{ site.baseurl }}{{node[0]}}</span>
                   </a>
                 {% else %}
                   <a href="{{ node[1][0] }}">
-                    <span class="link-name">{{node[0]}}</span>
+                    <span class="link-name">{{ site.baseurl }}{{node[0]}}</span>
                   </a>
                 {% endif %}
               </li>
