@@ -377,16 +377,23 @@ div.page-navigation a.prev:before {
 /* end of navigation */
 
 
-/* disqus_thread */
+/* disqus comments */
 #disqus_thread {
   padding: 0 2.2em;
 }
-/* disqus_thread */
+
+a.dsq-brlink {
+  display: block;
+  padding: 0 2.2em;
+  color: #A6A5AA;
+  text-align: center;
+}
+/* disqus comments */
 
 
 /* footer */
 .footer {
-  margin: 30px 2em 0;
+  margin: 60px 2em 0;
   padding: 8px 0;
   border-top: 6px solid #f0f0f0;
 }
