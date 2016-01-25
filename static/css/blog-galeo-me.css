@@ -483,7 +483,8 @@ pre.example {
   font-size: 16px !important;
   line-height: 1.1em;
   position: relative;
-  overflow: visible;
+  overflow: auto;
+  display: block;
   padding-top: 1.2em;
 }
 
