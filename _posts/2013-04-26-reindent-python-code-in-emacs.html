@@ -17,7 +17,7 @@ Emacs用来做Python开发，还是特别让人舒服的。比如PyCharm中的�
 <pre class="src src-emacs-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">revert-buffer-keep-undo</span> <span style="color: #008edd;">(</span><span style="color: #1CC9D5;">&amp;rest</span> <span style="color: #e775fd;">-</span><span style="color: #008edd;">)</span>
   <span style="color: #ea4f83;">"Revert buffer but keep undo history."</span>
   <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">interactive</span><span style="color: #008edd;">)</span>
-  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #d83f43;">inhibit-read-only</span> t<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #FAB1BC;">inhibit-read-only</span> t<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
     <span style="color: #70c0b1;">(</span>clear-visited-file-modtime<span style="color: #70c0b1;">)</span>
     <span style="color: #70c0b1;">(</span>erase-buffer<span style="color: #70c0b1;">)</span>
     <span style="color: #70c0b1;">(</span>insert-file-contents <span style="color: #9ce55f;">(</span>buffer-file-name<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
@@ -124,7 +124,7 @@ Emacs用来做Python开发，还是特别让人舒服的。比如PyCharm中的�
         <span style="color: #9ce55f;">(</span><span style="color: #e775fd;">error-buffer</span> <span style="color: #ea4f83;">"*Shell Output Error*"</span><span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
     <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #9ce55f;">(</span><span style="color: #FC8C15; font-style: italic;">and</span> output
              <span style="color: #e7c547;">(</span>not <span style="color: #ef9433;">(</span>string-match <span style="color: #ea4f83;">"^Traceback</span><span style="color: #ea4f83; font-weight: bold;">\\</span><span style="color: #ea4f83; font-weight: bold;">|</span><span style="color: #ea4f83;">^\\w+Error:"</span> output<span style="color: #ef9433;">)</span><span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span>
-        <span style="color: #ef9433; font-style: italic;">;; </span><span style="color: #77b530; font-style: italic;">no error</span>
+        <span style="color: #ef9433;">;; </span><span style="color: #77b530;">no error</span>
         <span style="color: #9ce55f;">(</span><span style="color: #FC8C15; font-style: italic;">progn</span>
           <span style="color: #e7c547;">(</span>goto-char beg<span style="color: #e7c547;">)</span>
           <span style="color: #e7c547;">(</span>kill-region beg end<span style="color: #e7c547;">)</span>

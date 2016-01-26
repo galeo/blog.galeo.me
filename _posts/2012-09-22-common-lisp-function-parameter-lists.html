@@ -3,10 +3,11 @@ title: "Common Lisp - Function Parameter Lists"
 date: 2012-09-22
 layout: post
 tags: CommonLisp
+series: "Practical Common Lisp"
 ---
 <p>
   <blockquote>
-    Common Lisp's parameter lists give you more flexible ways of mapping the arguments in a function call to the function's parameters &#x2026; (They) provide a convenient solution to several common coding problems.
+Common Lisp's parameter lists give you more flexible ways of mapping the arguments in a function call to the function's parameters &#x2026; (They) provide a convenient solution to several common coding problems.
   </blockquote>
 </p>
 
@@ -51,7 +52,7 @@ tags: CommonLisp
 </pre>
 </div>
 <p>
-本例中，除非明确指定否则将导致height形参带有和width形参相同的值。
+本例中，除非明确指定否则将导致 <code>height</code> 形参带有和 <code>width</code> 形参相同的值。
 </p>
 
 <p>
@@ -114,7 +115,7 @@ Lisp允许在符号 <b>&amp;rest</b> 之后包括一揽子形参。如果函数�
 <pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">(</span><span style="color: #1CC9D5;">&amp;key</span> <span style="color: #70c0b1;">(</span>a 0<span style="color: #70c0b1;">)</span> <span style="color: #70c0b1;">(</span>b 0 b-supplied-p<span style="color: #70c0b1;">)</span> <span style="color: #70c0b1;">(</span>c <span style="color: #9ce55f;">(</span>+a b<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
   <span style="color: #008edd;">(</span>list a b c b-supplied-p<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
 
-<span style="color: #b77cfb;">(</span>foo <span style="color: #74d6fb; font-style: italic;">:a</span> 2 <span style="color: #74d6fb; font-style: italic;">:b</span> 1 <span style="color: #74d6fb; font-style: italic;">:c</span> 4<span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; (2 1 4 T)</span>
+<span style="color: #b77cfb;">(</span>foo <span style="color: #74d6fb; font-style: italic;">:a</span> 2 <span style="color: #74d6fb; font-style: italic;">:b</span> 1 <span style="color: #74d6fb; font-style: italic;">:c</span> 4<span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; --&gt; (2 1 4 T)</span>
 </pre>
 </div>
 
@@ -127,7 +128,7 @@ Lisp允许在符号 <b>&amp;rest</b> 之后包括一揽子形参。如果函数�
   <span style="color: #008edd;">(</span>list a b c-supplied-p<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
 
 <span style="color: #b77cfb;">(</span>foo <span style="color: #74d6fb; font-style: italic;">:apple</span> 10 <span style="color: #74d6fb; font-style: italic;">:box</span> 20 <span style="color: #74d6fb; font-style: italic;">:charlie</span> 30<span style="color: #b77cfb;">)</span>
-<span style="color: #ef9433; font-style: italic;">; </span><span style="color: #77b530; font-style: italic;">--&gt; (10 20 30 T)</span>
+<span style="color: #ef9433;">; </span><span style="color: #77b530;">--&gt; (10 20 30 T)</span>
 </pre>
 </div>
 
@@ -160,7 +161,7 @@ Lisp允许在符号 <b>&amp;rest</b> 之后包括一揽子形参。如果函数�
 <pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">(</span><span style="color: #1CC9D5;">&amp;rest</span> <span style="color: #e775fd;">rest</span> <span style="color: #1CC9D5;">&amp;key</span> <span style="color: #e775fd;">a</span> <span style="color: #e775fd;">b</span> <span style="color: #e775fd;">c</span><span style="color: #008edd;">)</span>
   <span style="color: #008edd;">(</span>list rest a b c<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
 
-<span style="color: #b77cfb;">(</span>foo <span style="color: #74d6fb; font-style: italic;">:a</span> 1 <span style="color: #74d6fb; font-style: italic;">:b</span> 2 <span style="color: #74d6fb; font-style: italic;">:c</span> 3<span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; ((:A 1 :B 2 :C 3) 1 2 3)</span>
+<span style="color: #b77cfb;">(</span>foo <span style="color: #74d6fb; font-style: italic;">:a</span> 1 <span style="color: #74d6fb; font-style: italic;">:b</span> 2 <span style="color: #74d6fb; font-style: italic;">:c</span> 3<span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; --&gt; ((:A 1 :B 2 :C 3) 1 2 3)</span>
 </pre>
 </div>
 </div>

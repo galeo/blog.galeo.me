@@ -145,10 +145,10 @@ OS X中的窗口程序则会从用户自己的environment.plist文件中获得�
 
 <div class="org-src-container">
 
-<pre class="src src-sh"><span style="color: #ef9433; font-style: italic;"># </span><span style="color: #77b530; font-style: italic;">bash</span>
+<pre class="src src-sh"><span style="color: #ef9433;"># </span><span style="color: #77b530;">bash</span>
 <span style="color: #74d6fb; font-style: italic;">export</span> <span style="color: #e775fd;">PATH</span>=$(<span style="color: #fa8072;">defaults</span> read <span style="color: #ea4f83;">"${HOME}/.MacOSX/environment"</span> PATH)
 
-<span style="color: #ef9433; font-style: italic;"># </span><span style="color: #77b530; font-style: italic;">tcsh</span>
+<span style="color: #ef9433;"># </span><span style="color: #77b530;">tcsh</span>
 <span style="color: #74d6fb; font-style: italic;">set</span> <span style="color: #e775fd;">path</span>=(<span style="color: #fa8072;">`defaults read ~/.MacOSX/environment PATH | tr ':' ' '`</span>)
 </pre>
 </div>
@@ -159,7 +159,7 @@ OS X中的窗口程序则会从用户自己的environment.plist文件中获得�
 
 <div class="org-src-container">
 
-<pre class="src src-sh"><span style="color: #ef9433; font-style: italic;">#</span><span style="color: #77b530; font-style: italic;">/etc/profile begin</span>
+<pre class="src src-sh"><span style="color: #ef9433;">#</span><span style="color: #77b530;">/etc/profile begin</span>
 <span style="color: #FC8C15; font-style: italic;">if</span> [ -x /usr/libexec/path_helper ]; <span style="color: #FC8C15; font-style: italic;">then</span>
     <span style="color: #74d6fb; font-style: italic;">eval</span> <span style="color: #fa8072;">`/usr/libexec/path_helper -s`</span>
     defaults write $<span style="color: #e775fd;">HOME</span>/.MacOSX/environment PATH <span style="color: #ea4f83;">"$PATH"</span>
@@ -321,7 +321,7 @@ GNU Emacs在Mac OS X上的发行版，详细请参考上文中的链接。
 </p></div></div>
 
 <div class="footdef"><sup><a id="fn.5" class="footnum" href="#fnr.5">5</a></sup> <div class="footpara"><p class="footpara">
-注意:在命令提示符之后输入shell名称(e.g. bash, tcsh)，将会开启一个子shell(sub-shell)，子shell将会继承父shell(parent shell)的环境变量，即使通过 <kbd>--noprofile</kbd> 参数来禁止shell读取初始化文件。
+注意:在命令提示符之后输入shell名称(e.g. bash, tcsh)，将会开启一个子shell(sub-shell)，子shell将会继承父shell(parent shell)的环境变量，即使通过 <code>--noprofile</code> 参数来禁止shell读取初始化文件。
 </p></div></div>
 
 <div class="footdef"><sup><a id="fn.6" class="footnum" href="#fnr.6">6</a></sup> <div class="footpara"><p class="footpara">

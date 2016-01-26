@@ -129,13 +129,13 @@ In computer programming, a <b>scope</b> is the context within a <a href="http://
 <pre class="src src-sh"><span style="color: #e775fd;">x</span>=1
 <span style="color: #FC8C15; font-style: italic;">function</span> <span style="color: #4AE2CA; font-weight: bold;">g</span> () { <span style="color: #74d6fb; font-style: italic;">echo</span> $<span style="color: #e775fd;">x</span> ; <span style="color: #e775fd;">x</span>=2 ; }
 <span style="color: #FC8C15; font-style: italic;">function</span> <span style="color: #4AE2CA; font-weight: bold;">f</span> () { <span style="color: #74d6fb; font-style: italic;">local</span> <span style="color: #e775fd;">x</span>=3 ; g ; }
-f <span style="color: #ef9433; font-style: italic;"># </span><span style="color: #77b530; font-style: italic;">does this print 1, or 3?</span>
-<span style="color: #74d6fb; font-style: italic;">echo</span> $<span style="color: #e775fd;">x</span> <span style="color: #ef9433; font-style: italic;"># </span><span style="color: #77b530; font-style: italic;">does this print 1, or 2?</span>
+f <span style="color: #ef9433;"># </span><span style="color: #77b530;">does this print 1, or 3?</span>
+<span style="color: #74d6fb; font-style: italic;">echo</span> $<span style="color: #e775fd;">x</span> <span style="color: #ef9433;"># </span><span style="color: #77b530;">does this print 1, or 2?</span>
 </pre>
 </div>
 
 <p>
-考虑上面的代码，第一行，创建了一个全局变量 <b>x</b> 并初始化其值为1。第二行，定义了一个函数 <b>g</b> ，它将打印（“回显”）当前 <b>x</b> 的值，然后设置 <b>x</b> 为2（重写前面的值）。第三行，定义了一个函数 <b>f</b> ，并创建了一个局部变量 <b>x</b> （隐藏掉相同命名的全局变量）并初始化其值为3，然后调用函数 <b>g</b> 。第四行，调用函数 <b>f</b> 。最后第五行，打印 <b>x</b> 的当前值。
+考虑上面的代码，第一行，创建了一个全局变量 <code>x</code> 并初始化其值为1。第二行，定义了一个函数 <code>g</code> ，它将打印（“回显”）当前 <code>x</code> 的值，然后设置 <code>x</code> 为2（重写前面的值）。第三行，定义了一个函数 <code>f</code> ，并创建了一个局部变量 <code>x</code> （隐藏掉相同命名的全局变量）并初始化其值为3，然后调用函数 <code>g</code> 。第四行，调用函数 <code>f</code> 。最后第五行，打印 <code>x</code> 的当前值。
 </p>
 
 <p>
@@ -155,7 +155,7 @@ f <span style="color: #ef9433; font-style: italic;"># </span><span style="color:
 </p>
 
 <p>
-在前面的程序当中，如果它使用的是词法作用域，那么函数 <b>g</b> 将打印和修改全局变量 <b>x</b> 的值（因为函数 <b>g</b> 是在函数 <b>f</b> 之外定义的），所以程序将打印1和2。
+在前面的程序当中，如果它使用的是词法作用域，那么函数 <code>g</code> 将打印和修改全局变量 <code>x</code> 的值（因为函数 <code>g</code> 是在函数 <code>f</code> 之外定义的），所以程序将打印1和2。
 </p>
 </div>
 </div>
@@ -176,7 +176,7 @@ f <span style="color: #ef9433; font-style: italic;"># </span><span style="color:
 </p>
 
 <p>
-再回到前面的程序当中，如果其使用的是动态作用域，那么函数 <b>g</b> 将打印和修改函数 <b>f</b> 的局部变量 <b>x</b> （因为函数 <b>g</b> 是在函数 <b>f</b> 之内调用的），所以程序将打印3然后打印1。<sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>
+再回到前面的程序当中，如果其使用的是动态作用域，那么函数 <code>g</code> 将打印和修改函数 <code>f</code> 的局部变量 <code>x</code> （因为函数 <code>g</code> 是在函数 <code>f</code> 之内调用的），所以程序将打印3然后打印1。<sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>
 </p>
 </div>
 </div>
@@ -227,7 +227,7 @@ f <span style="color: #ef9433; font-style: italic;"># </span><span style="color:
 </p></div></div>
 
 <div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><p class="footpara">
-or called <i>dynamic scope</i>.
+or called <b>dynamic scope</b>.
 </p></div></div>
 
 <div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3">3</a></sup> <div class="footpara"><p class="footpara">

@@ -40,14 +40,14 @@ Some examples:
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #008edd;">(</span>&gt; 2 3<span style="color: #008edd;">)</span> <span style="color: #ea4f83;">"Yup"</span> <span style="color: #ea4f83;">"Nope"</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; "Nope"</span>
-<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #008edd;">(</span>&gt; 2 3<span style="color: #008edd;">)</span> <span style="color: #ea4f83;">"Yup"</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; NIL</span>
-<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #008edd;">(</span>&gt; 3 2<span style="color: #008edd;">)</span> <span style="color: #ea4f83;">"Yup"</span> <span style="color: #ea4f83;">"Nope"</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; "Yup"</span>
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #008edd;">(</span>&gt; 2 3<span style="color: #008edd;">)</span> <span style="color: #ea4f83;">"Yup"</span> <span style="color: #ea4f83;">"Nope"</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; --&gt; "Nope"</span>
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #008edd;">(</span>&gt; 2 3<span style="color: #008edd;">)</span> <span style="color: #ea4f83;">"Yup"</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; --&gt; NIL</span>
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #008edd;">(</span>&gt; 3 2<span style="color: #008edd;">)</span> <span style="color: #ea4f83;">"Yup"</span> <span style="color: #ea4f83;">"Nope"</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; --&gt; "Yup"</span>
 </pre>
 </div>
 
 <p>
-<b>IF</b> 中每个 <i>then-form</i> 和 <i>else-form</i> 都被限制为必须是单一的Lisp形式。通过特殊操作符 <b>PROGN</b> 可以按顺序执行任意数量的形式并返回最后一个形式的值，e.g.:
+<b>IF</b> 中每个 <code>then-form</code> 和 <code>else-form</code> 都被限制为必须是单一的Lisp形式。通过特殊操作符 <b>PROGN</b> 可以按顺序执行任意数量的形式并返回最后一个形式的值，e.g.:
 </p>
 <div class="org-src-container">
 
@@ -75,7 +75,7 @@ Some examples:
 <div class="org-src-container">
 
 <pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defmacro</span> <span style="color: #4AE2CA; font-weight: bold;">my-when</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">condition</span> <span style="color: #1CC9D5;">&amp;rest</span> <span style="color: #e775fd;">body</span><span style="color: #008edd;">)</span>
-  <span style="color: #d83f43;">`</span><span style="color: #008edd; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">if</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #d83f43;">,</span>conditon<span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">progn</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #d83f43;">,@</span>body<span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd; font-style: italic;">)</span><span style="color: #b77cfb;">)</span>
+  <span style="color: #FC8C15;">`</span><span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #FC8C15;">,</span>conditon <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">progn</span> <span style="color: #FC8C15;">,@</span>body<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
 </pre>
 </div>
 
@@ -86,7 +86,7 @@ Some examples:
 <div class="org-src-container">
 
 <pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defmacro</span> <span style="color: #4AE2CA; font-weight: bold;">my-unless</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">condition</span> <span style="color: #1CC9D5;">&amp;rest</span> <span style="color: #e775fd;">body</span><span style="color: #008edd;">)</span>
-  <span style="color: #d83f43;">`</span><span style="color: #008edd; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">if</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">not </span><span style="color: #d83f43;">,</span>condition<span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">progn</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #d83f43;">,@</span>body<span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd; font-style: italic;">)</span><span style="color: #b77cfb;">)</span>
+  <span style="color: #FC8C15;">`</span><span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #70c0b1;">(</span>not <span style="color: #FC8C15;">,</span>condition<span style="color: #70c0b1;">)</span> <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">progn</span> <span style="color: #FC8C15;">,@</span>body<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
 </pre>
 </div>
 
@@ -138,10 +138,10 @@ AND和OR实现了对任意数量子表达式的逻辑合取和析取操作，并
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span style="color: #b77cfb;">(</span>not nil<span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; T</span>
-<span style="color: #b77cfb;">(</span>not <span style="color: #008edd;">(</span>= 1 1<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; NIL</span>
-<span style="color: #b77cfb;">(</span>and <span style="color: #008edd;">(</span>= 1 2<span style="color: #008edd;">)</span> <span style="color: #008edd;">(</span>= 3 3<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; NIL</span>
-<span style="color: #b77cfb;">(</span>or <span style="color: #008edd;">(</span>= 1 2<span style="color: #008edd;">)</span> <span style="color: #008edd;">(</span>= 3 3<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; T</span>
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span>not nil<span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; --&gt; T</span>
+<span style="color: #b77cfb;">(</span>not <span style="color: #008edd;">(</span>= 1 1<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; --&gt; NIL</span>
+<span style="color: #b77cfb;">(</span>and <span style="color: #008edd;">(</span>= 1 2<span style="color: #008edd;">)</span> <span style="color: #008edd;">(</span>= 3 3<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; --&gt; NIL</span>
+<span style="color: #b77cfb;">(</span>or <span style="color: #008edd;">(</span>= 1 2<span style="color: #008edd;">)</span> <span style="color: #008edd;">(</span>= 3 3<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; --&gt; T</span>
 </pre>
 </div>
 </div>
@@ -175,11 +175,11 @@ DO提供了一种基本的结构化循环构造，DOLIST和DOTIMES提供了两�
 </pre>
 
 <p>
-循环开始时， <i>list-form</i> 被求值一次产生一个列表，然后循环体在列表的每一项上求值一次，使用变量 <i>var</i> 保存当前项的值，例如:
+循环开始时， <code>list-form</code> 被求值一次产生一个列表，然后循环体在列表的每一项上求值一次，使用变量 <code>var</code> 保存当前项的值，例如:
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">dolist</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">x</span> '<span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">1 2 3</span><span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd;">)</span> <span style="color: #008edd;">(</span>print x<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; NIL</span>
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">dolist</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">x</span> '<span style="color: #70c0b1;">(</span>1 2 3<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span> <span style="color: #008edd;">(</span>print x<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; --&gt; NIL</span>
 </pre>
 </div>
 
@@ -188,7 +188,7 @@ DO提供了一种基本的结构化循环构造，DOLIST和DOTIMES提供了两�
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">dolist</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">x</span> '<span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">1 2 3</span><span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd;">)</span>
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">dolist</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">x</span> '<span style="color: #70c0b1;">(</span>1 2 3<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
   <span style="color: #008edd;">(</span>print x<span style="color: #008edd;">)</span>
   <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">if</span> <span style="color: #70c0b1;">(</span>evenp x<span style="color: #70c0b1;">)</span>
       <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">return</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
@@ -204,7 +204,7 @@ DO提供了一种基本的结构化循环构造，DOLIST和DOTIMES提供了两�
 </pre>
 
 <p>
-<i>count-form</i> 必须要能求值为一个整数，每次循环， <i>var</i> 所保持的整数依次为从0到比那个数小1的每一个后继整数，例如:
+<code>count-form</code> 必须要能求值为一个整数，每次循环， <code>var</code> 所保持的整数依次为从0到比那个数小1的每一个后继整数，例如:
 </p>
 <div class="org-src-container">
 
@@ -222,7 +222,7 @@ DOLIST和DOTIMES的循环体中可以包含任何类型的表达式，所以可�
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span style="color: #ef9433; font-style: italic;">; </span><span style="color: #77b530; font-style: italic;">&#25171;&#21360;&#20174;1*1=1&#21040;20*20=400&#30340;&#20056;&#27861;&#34920;</span>
+<pre class="src src-lisp"><span style="color: #ef9433;">; </span><span style="color: #77b530;">&#25171;&#21360;&#20174;1*1=1&#21040;20*20=400&#30340;&#20056;&#27861;&#34920;</span>
 <span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">dotimes</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">x</span> 20<span style="color: #008edd;">)</span>
   <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">dotimes</span> <span style="color: #70c0b1;">(</span><span style="color: #e775fd;">y</span> 20<span style="color: #70c0b1;">)</span>
     <span style="color: #70c0b1;">(</span>format t <span style="color: #ea4f83;">"~3d "</span> <span style="color: #9ce55f;">(</span>* <span style="color: #e7c547;">(</span>1+ x<span style="color: #e7c547;">)</span> <span style="color: #e7c547;">(</span>1+ y<span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
@@ -245,39 +245,39 @@ DOLIST和DOTIMES的循环体中可以包含任何类型的表达式，所以可�
 </pre>
 
 <p>
-每一个 <i>variable-definition</i> 引入了一个将存在于循环体作用域之内的变量。单一变量定义的完整形式时一个三元素列表:
+每一个 <code>variable-definition</code> 引入了一个将存在于循环体作用域之内的变量。单一变量定义的完整形式时一个三元素列表:
 </p>
 <pre class="example">
 (var init-form step-form)
 </pre>
 
 <p>
-<i>init-form</i> 将在循环开始时被求值并将结果绑定到变量 <i>var</i> 上。循环的每一个后续迭代开始之前， <i>step-form</i> 将被求值，并把新值赋给 <i>var</i> 。 <i>step-form</i> 是可选的，如果没有给出，那么变量在迭代过程中保持其值不变，除非在循环体中为其赋予新值。和 <b>LET</b> 中的变量定义一样，如果 <i>init-form</i> 没有给出，变量将被绑定到 <b>NIL</b> 。和LET的情形一样，你可以将一个只含有名字的列表简化成一个简单的变量名来使用。<sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup>
+<code>init-form</code> 将在循环开始时被求值并将结果绑定到变量 <code>var</code> 上。循环的每一个后续迭代开始之前， <code>step-form</code> 将被求值，并把新值赋给 <code>var</code> 。 <code>step-form</code> 是可选的，如果没有给出，那么变量在迭代过程中保持其值不变，除非在循环体中为其赋予新值。和 <b>LET</b> 中的变量定义一样，如果 <code>init-form</code> 没有给出，变量将被绑定到 <code>NIL</code> 。和LET的情形一样，你可以将一个只含有名字的列表简化成一个简单的变量名来使用。<sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup>
 </p>
 
 <p>
-每次迭代开始并且所有循环变量都被赋予新值后， <i>end-test-form</i> 会被求值，只要其值不为真，迭代就会继续，依次求值所有的 <i>statement</i> 。
+每次迭代开始并且所有循环变量都被赋予新值后， <code>end-test-form</code> 会被求值，只要其值不为真，迭代就会继续，依次求值所有的 <code>statement</code> 。
 </p>
 
 <p>
-当 <i>end-test-form</i> 求值为真时， <i>result-form</i> 将被求值，且最后一个形式的值将被作为DO表达式的结果返回。
+当 <code>end-test-form</code> 求值为真时， <code>result-form</code> 将被求值，且最后一个形式的值将被作为DO表达式的结果返回。
 </p>
 
 <p>
-每一次迭代中，所有变量的 <i>step-form</i> (步长形式)将在分配任何值给变量之前被求值，所以可以在步长形式里引用其他任何循环变量。<sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>例如下面的循环:
+每一次迭代中，所有变量的 <code>step-form</code> (步长形式)将在分配任何值给变量之前被求值，所以可以在步长形式里引用其他任何循环变量。<sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>例如下面的循环:
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span style="color: #ef9433; font-style: italic;">; </span><span style="color: #77b530; font-style: italic;">&#35745;&#31639;&#31532;11&#20010;&#26000;&#27874;&#37027;&#22865;&#25968;</span>
-<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">do</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>n 0 <span style="color: #9ce55f;">(</span>1+ n<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span> <span style="color: #77b530; font-style: italic;">; first var</span>
-     <span style="color: #70c0b1;">(</span>cur 0 next<span style="color: #70c0b1;">)</span> <span style="color: #77b530; font-style: italic;">; second var</span>
-     <span style="color: #70c0b1;">(</span>next 1 <span style="color: #9ce55f;">(</span>+ cur next<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span> <span style="color: #77b530; font-style: italic;">; third var</span>
-    <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>= 10 n<span style="color: #70c0b1;">)</span> cur<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; end-test-form result-form</span>
+<pre class="src src-lisp"><span style="color: #ef9433;">; </span><span style="color: #77b530;">&#35745;&#31639;&#31532;11&#20010;&#26000;&#27874;&#37027;&#22865;&#25968;</span>
+<span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">do</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>n 0 <span style="color: #9ce55f;">(</span>1+ n<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span> <span style="color: #77b530;">; first var</span>
+     <span style="color: #70c0b1;">(</span>cur 0 next<span style="color: #70c0b1;">)</span> <span style="color: #77b530;">; second var</span>
+     <span style="color: #70c0b1;">(</span>next 1 <span style="color: #9ce55f;">(</span>+ cur next<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span> <span style="color: #77b530;">; third var</span>
+    <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>= 10 n<span style="color: #70c0b1;">)</span> cur<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; end-test-form result-form</span>
 </pre>
 </div>
 
 <p>
-其步长形式(1+ n)、next和(1+ cur next)均使用n、cur和next的旧值来求值，当所有步长形式都被求值后，其对应的变量才被赋予步长形式求解到的新值。
+其步长形式 <code>(1+ n)</code> 、 <code>next</code> 和 <code>(1+ cur next)</code> 均使用 <code>n</code> 、 <code>cur</code> 和 <code>next</code> 的旧值来求值，当所有步长形式都被求值后，其对应的变量才被赋予步长形式求解到的新值。
 </p>
 
 <p>
@@ -393,7 +393,7 @@ LOOP宏有两大类——简化的和扩展的。
      <span style="color: #70c0b1;">(</span>i 1 <span style="color: #9ce55f;">(</span>1+ i<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
     <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span>&gt; i 10<span style="color: #70c0b1;">)</span> <span style="color: #70c0b1;">(</span>nreverse nums<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
   <span style="color: #008edd;">(</span>push i nums<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
-<span style="color: #ef9433; font-style: italic;">; </span><span style="color: #77b530; font-style: italic;">(1 2 3 4 5 6 7 8 9 10)</span>
+<span style="color: #ef9433;">; </span><span style="color: #77b530;">(1 2 3 4 5 6 7 8 9 10)</span>
 </pre>
 </div>
 
@@ -415,7 +415,7 @@ LOOP宏有两大类——简化的和扩展的。
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">loop</span> <span style="color: #74d6fb; font-style: italic;">for</span> <span style="color: #e775fd;">x</span> <span style="color: #74d6fb; font-style: italic;">from</span> 1 <span style="color: #74d6fb; font-style: italic;">to</span> 10 summing <span style="color: #008edd;">(</span>expt x 2<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; 385</span>
+<pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">loop</span> <span style="color: #74d6fb; font-style: italic;">for</span> <span style="color: #e775fd;">x</span> <span style="color: #74d6fb; font-style: italic;">from</span> 1 <span style="color: #74d6fb; font-style: italic;">to</span> 10 summing <span style="color: #008edd;">(</span>expt x 2<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; --&gt; 385</span>
 </pre>
 </div></li>
 
@@ -425,7 +425,7 @@ LOOP宏有两大类——简化的和扩展的。
 <div class="org-src-container">
 
 <pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">loop</span> <span style="color: #74d6fb; font-style: italic;">for</span> <span style="color: #e775fd;">x</span> <span style="color: #74d6fb; font-style: italic;">across</span> <span style="color: #ea4f83;">"the quick brown fox jumps over the lazy dog"</span>
-     counting <span style="color: #008edd;">(</span>find x <span style="color: #ea4f83;">"aeiou"</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530; font-style: italic;">; --&gt; 11</span>
+     counting <span style="color: #008edd;">(</span>find x <span style="color: #ea4f83;">"aeiou"</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span> <span style="color: #77b530;">; --&gt; 11</span>
 </pre>
 </div></li>
 
@@ -471,7 +471,7 @@ LOOP宏有两大类——简化的和扩展的。
 </p></div></div>
 
 <div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3">3</a></sup> <div class="footpara"><p class="footpara">
-e.g., '<i>(list-name)</i> .
+e.g., <code>'(list-name)</code> .
 </p></div></div>
 
 <div class="footdef"><sup><a id="fn.4" class="footnum" href="#fnr.4">4</a></sup> <div class="footpara"><p class="footpara">

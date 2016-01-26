@@ -43,8 +43,8 @@ CL-USER&gt; S
 表达式 <code>(setf S 10)</code> 执行了下面两个步骤：
 </p>
 <ol class="org-ol">
-<li>把符号 <b>S</b> 跟内存中的一存储单元建立起绑定。之后，符号 <b>S</b> 出现的地方就代表（引用）了这一存储单元。</li>
-<li>把符号 <b>S</b> 所引用的存储单元的值设为整数10。我们接着在命令行中敲入S求值时，REPL会依据之前建立起的绑定找到那个存储单元并把值打印出来。</li>
+<li>把符号 <code>S</code> 跟内存中的一存储单元建立起绑定。之后，符号 <code>S</code> 出现的地方就代表（引用）了这一存储单元。</li>
+<li>把符号 <code>S</code> 所引用的存储单元的值设为整数10。我们接着在命令行中敲入 <code>S</code> 求值时，REPL会依据之前建立起的绑定找到那个存储单元并把值打印出来。</li>
 </ol>
 
 
@@ -57,7 +57,7 @@ Common Lisp中所有的值，至少从概念上讲，都是对对象的引用（
 <h3 id="orgheadline2">函数形参</h3>
 <div class="outline-text-3" id="text-orgheadline2">
 <p>
-引入新变量的一种方式是定义函数行参。当你用 <b>DEFUN</b> 定义一个函数，行参列表定义了用来保存当函数被调用时传给它的实参的变量。例如，下面的函数定义了三个变量—— <b>x</b> 、 <b>y</b> 、 <b>z</b> ， 用来保存它的实参：
+引入新变量的一种方式是定义函数行参。当你用 <b>DEFUN</b> 定义一个函数，行参列表定义了用来保存当函数被调用时传给它的实参的变量。例如，下面的函数定义了三个变量—— <code>x</code> 、 <code>y</code> 、 <code>z</code> ， 用来保存它的实参：
 </p>
 <div class="org-src-container">
 
@@ -90,7 +90,7 @@ Common Lisp中所有的值，至少从概念上讲，都是对对象的引用（
 </div>
 
 <p>
-其中，每一个 <i>variable</i> 都是一个变量初始化形式——要么是一个含有一个变量名和一个初始值的列表，要么是简单的一个将其初始值设为 <b>NIL</b> 的单独的变量名。下面的 <b>LET</b> 形式会绑定三个变量 <b>x</b> 、 <b>y</b> 和 <b>z</b> 到初始值10、20和 <b>NIL</b> 上：
+其中，每一个 <code>variable</code> 都是一个变量初始化形式——要么是一个含有一个变量名和一个初始值的列表，要么是简单的一个将其初始值设为 <b>NIL</b> 的单独的变量名。下面的 <b>LET</b> 形式会绑定三个变量 <code>x</code> 、 <code>y</code> 和 <code>z</code> 到初始值10、20和 NIL 上：
 </p>
 
 <div class="org-src-container">
@@ -118,23 +118,23 @@ Common Lisp中所有的值，至少从概念上讲，都是对对象的引用（
 </p>
 
 <p>
-如果嵌套地使用绑定形式引入了相同名字的变量，那么内层的变量绑定将覆盖外层的绑定。例如，当下面的函数被调用时，将为形参 <b>x</b> 创建一个绑定来保存其对应的函数实参。第一个 <b>LET</b> 创建了一个带有初始值2的新绑定，内层的 <b>LET</b> 创建了另一个绑定，其初始值为3。右面的竖线标记了每一个绑定的作用域。
+如果嵌套地使用绑定形式引入了相同名字的变量，那么内层的变量绑定将覆盖外层的绑定。例如，当下面的函数被调用时，将为形参 <code>x</code> 创建一个绑定来保存其对应的函数实参。第一个 <b>LET</b> 创建了一个带有初始值2的新绑定，内层的 <b>LET</b> 创建了另一个绑定，其初始值为3。右面的竖线标记了每一个绑定的作用域。
 </p>
 <div class="org-src-container">
 
 <pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defun</span> <span style="color: #4AE2CA; font-weight: bold;">foo</span> <span style="color: #008edd;">(</span><span style="color: #e775fd;">x</span><span style="color: #008edd;">)</span>
-  <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"Parameter: ~a~%"</span> x<span style="color: #008edd;">)</span>      <span style="color: #77b530; font-style: italic;">; |&lt;------ x&#20026;&#23454;&#21442;</span>
-  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #e775fd;">x</span> 2<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>                        <span style="color: #77b530; font-style: italic;">; |</span>
-    <span style="color: #70c0b1;">(</span>format t <span style="color: #ea4f83;">"Outer LET: ~a~%"</span> x<span style="color: #70c0b1;">)</span>    <span style="color: #77b530; font-style: italic;">; | |&lt;---- x&#23545;&#24212;&#30340;&#20540;&#20026;2</span>
-    <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #9ce55f;">(</span><span style="color: #e7c547;">(</span><span style="color: #e775fd;">x</span> 3<span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span>                      <span style="color: #77b530; font-style: italic;">; | |</span>
-      <span style="color: #9ce55f;">(</span>format t <span style="color: #ea4f83;">"Inner LET: ~a~%"</span> x<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span> <span style="color: #77b530; font-style: italic;">; | | |&lt;-- x&#23545;&#24212;&#30340;&#20540;3</span>
-    <span style="color: #70c0b1;">(</span>format t <span style="color: #ea4f83;">"Outer LET: ~a~%"</span> x<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>   <span style="color: #77b530; font-style: italic;">; | |</span>
-  <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"Parameter: ~a~%"</span> x<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>     <span style="color: #77b530; font-style: italic;">; |</span>
+  <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"Parameter: ~a~%"</span> x<span style="color: #008edd;">)</span>      <span style="color: #77b530;">; |&lt;------ x&#20026;&#23454;&#21442;</span>
+  <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #e775fd;">x</span> 2<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>                        <span style="color: #77b530;">; |</span>
+    <span style="color: #70c0b1;">(</span>format t <span style="color: #ea4f83;">"Outer LET: ~a~%"</span> x<span style="color: #70c0b1;">)</span>    <span style="color: #77b530;">; | |&lt;---- x&#23545;&#24212;&#30340;&#20540;&#20026;2</span>
+    <span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #9ce55f;">(</span><span style="color: #e7c547;">(</span><span style="color: #e775fd;">x</span> 3<span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span>                      <span style="color: #77b530;">; | |</span>
+      <span style="color: #9ce55f;">(</span>format t <span style="color: #ea4f83;">"Inner LET: ~a~%"</span> x<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span> <span style="color: #77b530;">; | | |&lt;-- x&#23545;&#24212;&#30340;&#20540;3</span>
+    <span style="color: #70c0b1;">(</span>format t <span style="color: #ea4f83;">"Outer LET: ~a~%"</span> x<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>   <span style="color: #77b530;">; | |</span>
+  <span style="color: #008edd;">(</span>format t <span style="color: #ea4f83;">"Parameter: ~a~%"</span> x<span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>     <span style="color: #77b530;">; |</span>
 </pre>
 </div>
 
 <p>
-每一个对x的引用都将指向最小的封闭作用域中的绑定。一旦程序控制离开了一个绑定形式的作用域，其覆盖的最近的绑定形式就会被解除覆盖， <b>x</b> 将转而指向它。所以，调用 <b>foo</b> 将得到下面的输出结果：
+每一个对 <code>x</code> 的引用都将指向最小的封闭作用域中的绑定。一旦程序控制离开了一个绑定形式的作用域，其覆盖的最近的绑定形式就会被解除覆盖， <code>x</code> 将转而指向它。所以，调用 <code>foo</code> 将得到下面的输出结果：
 </p>
 <pre class="example">
 CL-USER&gt; (foo 1)
@@ -148,7 +148,7 @@ NIL
 
 
 <p>
-这里也可以用绑定栈的概念来理解<sup><a id="fnr.12" class="footref" href="#fn.12">12</a></sup>，我们对上面的例子进行分析，当进入Inner LET（即最内层的那个LET操作符）时，符号 <b>x</b> 的绑定栈如下图所示：
+这里也可以用绑定栈的概念来理解<sup><a id="fnr.12" class="footref" href="#fn.12">12</a></sup>，我们对上面的例子进行分析，当进入 <b>Inner LET</b> （即最内层的那个LET操作符）时，符号 <code>x</code> 的绑定栈如下图所示：
 </p>
 
 <div class="figure">
@@ -157,7 +157,7 @@ NIL
 </div>
 
 <p>
-符号 <b>x</b> 始终使用栈顶的绑定，当程序从  <b>Inner LET</b> 退出回到 <b>Outer LET</b> 时，绑定栈栈顶的绑定3被弹出，绑定2成了栈顶，于是在回到 <b>Outer LET</b> 时打印符号 <b>x</b> 的值便是2。
+符号 <code>x</code> 始终使用栈顶的绑定，当程序从  <b>Inner LET</b> 退出回到 <b>Outer LET</b> 时，绑定栈栈顶的 <b>绑定3</b> 被弹出， <b>绑定2</b> 成了栈顶，于是在回到 <b>Outer LET</b> 时打印符号 <code>x</code> 的值便是2。
 </p>
 </div>
 </div>
@@ -170,7 +170,7 @@ NIL
 </p>
 
 <p>
-例如， <b>DOTIMES</b> 循环，一种基本的计数循环。它引入了一个变量用来保存每次通过循环是递增的计数器的值。例如下面的循环，将打印数字0到9，它绑定了变量 <b>x</b> ：
+例如， <b>DOTIMES</b> 循环，一种基本的计数循环。它引入了一个变量用来保存每次通过循环是递增的计数器的值。例如下面的循环，将打印数字0到9，它绑定了变量 <code>x</code> ：
 </p>
 
 <div class="org-src-container">
@@ -228,13 +228,13 @@ Common Lisp中将词法作用域和嵌套函数结合在一起时，按照词法
 <div class="org-src-container">
 
 <pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span><span style="color: #e775fd;">count</span> 0<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
-  #'<span style="color: #008edd; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #70c0b1; font-style: italic;">()</span>
-<span style="color: #12AEB1; font-style: italic;">      </span><span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">setf count </span><span style="color: #9ce55f; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">1+ count</span><span style="color: #9ce55f; font-style: italic;">)</span><span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd; font-style: italic;">)</span><span style="color: #b77cfb;">)</span>
+  #'<span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span> <span style="color: #70c0b1;">()</span>
+      <span style="color: #70c0b1;">(</span>setf count <span style="color: #9ce55f;">(</span>1+ count<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
 </pre>
 </div>
 
 <p>
-依据词法作用域的规则， <b>lambda</b> 形式中对于 <b>count</b> 的引用是合法的。当这个含有引用的匿名函数作为 <b>LET</b> 形式的值被返回，通过 <b>FUNCALL</b> ，被不在 <b>LET</b> 作用域之内的代码所调用，这样会发生什么？正如你将看到的那样，如果 <b>count</b> 是一个词法变量，代码正常工作，控制流进入 <b>LET</b> 形式时所创建的 <b>count</b> 绑定根据需要将被尽可能长时间得保持下来，只要某处保留了一个对 <b>LET</b> 形式返回的函数对象的引用。这个匿名函数被称为一个 <b>闭包</b> ，因为它封装了由 <b>LET</b> 创建的绑定。<sup><a id="fnr.13" class="footref" href="#fn.13">13</a></sup>
+依据词法作用域的规则， <b>lambda</b> 形式中对于 <code>count</code> 的引用是合法的。当这个含有引用的匿名函数作为 <b>LET</b> 形式的值被返回，通过 <b>FUNCALL</b> ，被不在 <b>LET</b> 作用域之内的代码所调用，这样会发生什么？正如你将看到的那样，如果 <code>count</code> 是一个词法变量，代码正常工作，控制流进入 <b>LET</b> 形式时所创建的 <code>count</code> 绑定根据需要将被尽可能长时间得保持下来，只要某处保留了一个对 <b>LET</b> 形式返回的函数对象的引用。这个匿名函数被称为一个 <b>闭包</b> ，因为它封装了由 <b>LET</b> 创建的绑定。<sup><a id="fnr.13" class="footref" href="#fn.13">13</a></sup>
 </p>
 
 <p>
@@ -243,13 +243,13 @@ Common Lisp中将词法作用域和嵌套函数结合在一起时，按照词法
 <div class="org-src-container">
 
 <pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">defparameter</span> <span style="color: #e775fd;">*fn*</span> <span style="color: #008edd;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #70c0b1;">(</span><span style="color: #9ce55f;">(</span><span style="color: #e775fd;">count</span> 0<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
-                     #'<span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #9ce55f; font-style: italic;">()</span>
-<span style="color: #12AEB1; font-style: italic;">                         </span><span style="color: #9ce55f; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">setf count </span><span style="color: #e7c547; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">1+ count</span><span style="color: #e7c547; font-style: italic;">)</span><span style="color: #9ce55f; font-style: italic;">)</span><span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+                     #'<span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span> <span style="color: #9ce55f;">()</span>
+                         <span style="color: #9ce55f;">(</span>setf count <span style="color: #e7c547;">(</span>1+ count<span style="color: #e7c547;">)</span><span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
 </pre>
 </div>
 
 <p>
-然后，每一次你调用它时，count的值将被加1：
+然后，每一次你调用它时， <code>count</code> 的值将被加1：
 </p>
 <pre class="example">
 CL-USER&gt; (funcall *fn*)
@@ -261,15 +261,15 @@ CL-USER&gt; (funcall *fn*)
 </pre>
 
 <p>
-单独一个闭包可以简单地通过引用来封装多个变量绑定。多个闭包也可以捕捉一个相同的绑定。例如，下面的表达式返回了一个由三个闭包组成的列表，一个闭包用来递增其所闭合的 <b>count</b> 绑定的值，另一个递减它，还有一个返回 <b>count</b> 绑定的当前的值：
+单独一个闭包可以简单地通过引用来封装多个变量绑定。多个闭包也可以捕捉一个相同的绑定。例如，下面的表达式返回了一个由三个闭包组成的列表，一个闭包用来递增其所闭合的 <code>count</code> 绑定的值，另一个递减它，还有一个返回 <code>count</code> 绑定的当前的值：
 </p>
 <div class="org-src-container">
 
 <pre class="src src-lisp"><span style="color: #b77cfb;">(</span><span style="color: #FC8C15; font-style: italic;">let</span> <span style="color: #008edd;">(</span><span style="color: #70c0b1;">(</span><span style="color: #e775fd;">count</span> 0<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span>
   <span style="color: #008edd;">(</span>list
-   #'<span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #9ce55f; font-style: italic;">()</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #9ce55f; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">incf count</span><span style="color: #9ce55f; font-style: italic;">)</span><span style="color: #70c0b1; font-style: italic;">)</span>
-   #'<span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #9ce55f; font-style: italic;">()</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #9ce55f; font-style: italic;">(</span><span style="color: #12AEB1; font-style: italic;">decf count</span><span style="color: #9ce55f; font-style: italic;">)</span><span style="color: #70c0b1; font-style: italic;">)</span>
-   #'<span style="color: #70c0b1; font-style: italic;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span><span style="color: #12AEB1; font-style: italic;"> </span><span style="color: #9ce55f; font-style: italic;">()</span><span style="color: #12AEB1; font-style: italic;"> count</span><span style="color: #70c0b1; font-style: italic;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
+   #'<span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span> <span style="color: #9ce55f;">()</span> <span style="color: #9ce55f;">(</span>incf count<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
+   #'<span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span> <span style="color: #9ce55f;">()</span> <span style="color: #9ce55f;">(</span>decf count<span style="color: #9ce55f;">)</span><span style="color: #70c0b1;">)</span>
+   #'<span style="color: #70c0b1;">(</span><span style="color: #FC8C15; font-style: italic;">lambda</span> <span style="color: #9ce55f;">()</span> count<span style="color: #70c0b1;">)</span><span style="color: #008edd;">)</span><span style="color: #b77cfb;">)</span>
 </pre>
 </div>
 </div>
@@ -283,7 +283,7 @@ CL-USER&gt; (funcall *fn*)
 </p>
 
 <p>
-Common Lisp提供两种方式来创建全局变量： <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 。两种方式都接受一个变量名，一个初始值和一个可选的文档字符串。在被 <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 定义之后，该变量名将可以在任何地方使用来引用全局变量的当前绑定。全局变量习惯上被命名为以 <code>*</code> 开始和结束，遵守该命名约定非常重要。 <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 的示例如下：
+Common Lisp提供两种方式来创建全局变量： <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 。两种方式都接受一个变量名，一个初始值和一个可选的文档字符串。在被 <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 定义之后，该变量名将可以在任何地方使用来引用全局变量的当前绑定。全局变量习惯上被命名为以 <b>*</b> 开始和结束，遵守该命名约定非常重要。 <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 的示例如下：
 </p>
 <div class="org-src-container">
 
@@ -300,11 +300,11 @@ Common Lisp提供两种方式来创建全局变量： <b>DEFVAR</b> 和 <b>DEFPA
 </p>
 
 <p>
-从实践上讲，应该使用 <b>DEFVAR</b> 来定义那些包含你想持久使用的数据的变量，即是你已经改动了使用此变量的代码。例如，假设前面定义的两个变量是一个用来控制工厂组件生产程序的一部分，使用 <b>DEFVAR</b> 来定义 <b>count</b> 变量就比较合适，因为到目前为止生产的组件的数量不会因为你改动了组件生产的代码就变得无效。<sup><a id="fnr.14" class="footref" href="#fn.14">14</a></sup>
+从实践上讲，应该使用 <b>DEFVAR</b> 来定义那些包含你想持久使用的数据的变量，即是你已经改动了使用此变量的代码。例如，假设前面定义的两个变量是一个用来控制工厂组件生产程序的一部分，使用 <b>DEFVAR</b> 来定义 <code>*count*</code> 变量就比较合适，因为到目前为止生产的组件的数量不会因为你改动了组件生产的代码就变得无效。<sup><a id="fnr.14" class="footref" href="#fn.14">14</a></sup>
 </p>
 
 <p>
-另一方面，假设变量 <b>gap-tolerance</b> 对生产组件的代码的行为有影响。假如你觉着你需要一个或紧或松的容差值，然后改动了 <b>DEFPARAMETER</b> 形式中的值，那么就要在重新编译或者加载文件时使这一改变产生效果。
+另一方面，假设变量 <code>*gap-tolerance*</code> 对生产组件的代码的行为有影响。假如你觉着你需要一个或紧或松的容差值，然后改动了 <b>DEFPARAMETER</b> 形式中的值，那么就要在重新编译或者加载文件时使这一改变产生效果。
 </p>
 
 <p>
@@ -322,7 +322,7 @@ Common Lisp提供两种方式来创建全局变量： <b>DEFVAR</b> 和 <b>DEFPA
 </p>
 
 <p>
-所有的全局变量都是动态变量。
+<b>所有的全局变量都是动态变量。</b>
 </p>
 
 <p>
@@ -342,7 +342,7 @@ Common Lisp提供两种方式来创建全局变量： <b>DEFVAR</b> 和 <b>DEFPA
 </div>
 
 <p>
-上面这个 <b>DEFVAR</b> 为变量 <b>x</b> 创建了一个到数值10的绑定，函数 <b>foo</b> 中对 <b>x</b> 的引用将动态地查找其当前绑定，如果你从顶层调用 <b>foo</b> ，由 <b>DEFVAR</b> 创建的全局绑定就是唯一可用的绑定，所以它将打印出10：
+上面这个 <b>DEFVAR</b> 为变量 <code>*x*</code> 创建了一个到数值10的绑定，函数 <code>foo</code> 中对 <code>*x*</code> 的引用将动态地查找其当前绑定，如果你从顶层调用 <code>foo</code> ，由 <b>DEFVAR</b> 创建的全局绑定就是唯一可用的绑定，所以它将打印出10：
 </p>
 <pre class="example">
 CL-USER&gt; (foo)
@@ -351,7 +351,7 @@ NIL
 </pre>
 
 <p>
-但是你可以用 <b>LET</b> 创建临时的绑定来覆盖全局的绑定，这样 <b>foo</b> 将打印一个不同的值：
+但是你可以用 <b>LET</b> 创建临时的绑定来覆盖全局的绑定，这样 <code>foo</code> 将打印一个不同的值：
 </p>
 <pre class="example">
 CL-USER&gt; (let ((*x* 20)) (foo))
@@ -360,7 +360,7 @@ NIL
 </pre>
 
 <p>
-现在不使用 <b>LET</b> 再调用 <b>foo</b> ，它将再次看到全局绑定：
+现在不使用 <b>LET</b> 再调用 <code>foo</code> ，它将再次看到全局绑定：
 </p>
 <pre class="example">
 CL-USER&gt; (foo)
@@ -381,7 +381,7 @@ NIL
 </div>
 
 <p>
-注意中间的那个对函数 <b>foo</b> 的调用被包含在一个将 <b>x</b> 绑定到新值20的 <b>LET</b> 中，运行 <b>bar</b> 得到的结果如下：
+注意中间的那个对函数 <code>foo</code> 的调用被包含在一个将 <code>*x*</code> 绑定到新值20的 <b>LET</b> 中，运行 <code>bar</code> 得到的结果如下：
 </p>
 <pre class="example">
 CL-USER&gt; (bar)
@@ -392,11 +392,11 @@ NIL
 </pre>
 
 <p>
-可一看到，第一次对 <b>foo</b> 的调用看到的是全局绑定，其值为10。但中间的那个调用看到的却是新的绑定，其值为20。在 <b>LET</b> 之后， <b>foo</b> 再次看到了全局绑定。
+可一看到，第一次对 <code>foo</code> 的调用看到的是全局绑定，其值为10。但中间的那个调用看到的却是新的绑定，其值为20。在 <b>LET</b> 之后， <code>foo</code> 再次看到了全局绑定。
 </p>
 
 <p>
-和词法绑定一样，赋予新值仅仅影响当前绑定。为了理解这点，可以重定义包含一个对 <b>x</b> 赋值的 <b>foo</b> ：
+和词法绑定一样，赋予新值仅仅影响当前绑定。为了理解这点，可以重定义包含一个对 <code>*x*</code> 赋值的 <code>foo</code> ：
 </p>
 <div class="org-src-container">
 
@@ -408,7 +408,7 @@ NIL
 </div>
 
 <p>
-现在 <b>foo</b> 打印 <b>x</b> 的值，对其递增，然后再次打印它。如果只运行 <b>foo</b> ，将看到这样的结果：
+现在 <code>foo</code> 打印 <code>*x*</code> 的值，对其递增，然后再次打印它。如果只运行 <code>foo</code> ，将看到这样的结果：
 </p>
 <pre class="example">
 CL-USER&gt; (foo)
@@ -418,7 +418,7 @@ NIL
 </pre>
 
 <p>
-看起来挺正常，现在运行 <b>bar</b> ：
+看起来挺正常，现在运行 <code>bar</code> ：
 </p>
 <pre class="example">
 CL-USER&gt; (bar)
@@ -432,11 +432,11 @@ NIL
 </pre>
 
 <p>
-注意 <b>x</b> 从11开始——之前的 <b>foo</b> 调用改变了全局的值。 <b>bar</b> 里面第一次调用 <b>foo</b> 将这个全局绑定的值递增到了12。中间的调用因为 <b>LET</b> 没有看到全局绑定。最后一个对 <b>foo</b> 的调用再次看到了全局绑定，并将其从12递增到了13。
+注意 <code>*x*</code> 从11开始——之前的 <code>foo</code> 调用改变了全局的值。 <code>bar</code> 里面第一次调用 <code>foo</code> 将这个全局绑定的值递增到了12。中间的调用因为 <b>LET</b> 没有看到全局绑定。最后一个对 <code>foo</code> 的调用再次看到了全局绑定，并将其从12递增到了13。
 </p>
 
 <p>
-那么它是怎样工作的？ <b>LET</b> 是如何知道在它绑定 <b>x</b> 时打算创建的是动态绑定而不是词法绑定？这是因为该名称已经被声明为特殊的（special）了。<sup><a id="fnr.16" class="footref" href="#fn.16">16</a></sup>每一个由 <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 所定义的变量，其名字都将被自动声明为全局特殊的。这意味着无论何时你在一个绑定形式—— <b>LET</b> 或着函数形参或者其他任何创建了新的变量绑定的构造——中使用这样一个名字，其所创建的绑定都将是一个动态绑定。这就是为什么 <b>命名约定</b> 如此重要——如果你使用了一个你认为是词法变量而它却恰好是全局特殊的变量就很不好。一方面，你调用的代码可能在你意料之外改变此变量绑定的值；另一方面，你可能会覆盖一个由绑定栈的上一级代码所建立的绑定。如果你总是按照 <kbd>*</kbd> 命名约定来命名全局变量，你将永远不会意外地在你想要建立一个词法绑定的地方使用一个动态绑定。
+那么它是怎样工作的？ <b>LET</b> 是如何知道在它绑定 <code>*x*</code> 时打算创建的是动态绑定而不是词法绑定？这是因为该名称已经被声明为特殊的（special）了。<sup><a id="fnr.16" class="footref" href="#fn.16">16</a></sup>每一个由 <b>DEFVAR</b> 和 <b>DEFPARAMETER</b> 所定义的变量，其名字都将被自动声明为全局特殊的。这意味着无论何时你在一个绑定形式—— <b>LET</b> 或着函数形参或者其他任何创建了新的变量绑定的构造——中使用这样一个名字，其所创建的绑定都将是一个动态绑定。这就是为什么 <code>*命名约定*</code> 如此重要——如果你使用了一个你认为是词法变量而它却恰好是全局特殊的变量就很不好。一方面，你调用的代码可能在你意料之外改变此变量绑定的值；另一方面，你可能会覆盖一个由绑定栈的上一级代码所建立的绑定。如果你总是按照 <b>*</b> 命名约定来命名全局变量，你将永远不会意外地在你想要建立一个词法绑定的地方使用一个动态绑定。
 </p>
 
 <p>
@@ -503,7 +503,7 @@ Common Lisp函数是“传值的”，但这些被传递的值是对对象的引
 </p></div></div>
 
 <div class="footdef"><sup><a id="fn.10" class="footnum" href="#fnr.10">10</a></sup> <div class="footpara"><p class="footpara">
-注意参考脚注6。
+注意参考 <b>脚注6</b> 。
 </p></div></div>
 
 <div class="footdef"><sup><a id="fn.11" class="footnum" href="#fnr.11">11</a></sup> <div class="footpara"><p class="footpara">
