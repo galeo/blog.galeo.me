@@ -32,11 +32,11 @@ related:
   max_number:     3
 
 pages_list:
-  Home: ['http://galeo.me/']
   Blog: ['/index.html']
   Archive: ['/archive.html']
   Tags: ['/tags.html']
   About: ['/about.html']
+  Home ⤶: ['http://galeo.me/']
 
 gems:
   - jekyll-sitemap
