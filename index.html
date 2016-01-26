@@ -18,7 +18,7 @@ title: Blog
         </p>
       </p>
 
-      <span class="post-date">{{ post.date | date_to_string }} -
+      <span class="post-date">{{ post.date | date: '%b %d, %Y' }} -
         <a href="{{ post.url }}#disqus_thread"
            data-disqus-identifier="{{ site.url }}{{ post.url }}{{ post.commentsID }}"
            class="comment-link"> Comment</a>
