@@ -1,0 +1,32 @@
+---
+layout: page
+title: Search Posts
+noIndex: true
+---
+
+<script>
+ function getQueryParameter() {
+   var regex = new RegExp("[\\?&]" + 'search' + "=([^&#]*)"),
+       results = regex.exec(location.search);
+   return results == null ? /./ : new RegExp( decodeURIComponent(results[1].replace(/\+/g, " ")), "i");
+ }
+ var queryRegexp = getQueryParameter();
+ var matched = false;
+</script>
+
+<script>
+ document.write("<p class=\"search-info\">Posts whose titles match the regular expression <code>"+queryRegexp+"</code>:</p>");
+</script>
+
+<ul class="archive">
+  <script>
+   {% for post in site.posts %}
+   if ("{{ post.title }}".match(queryRegexp)) {
+     document.write("<li><span class='archive-date'>{{ post.date | date_to_string }}</span> - <a href='{{ post.url }}'>{{ post.title }}</a></li>");
+     matched = true;
+   }
+   {% endfor %}
+   if (!matched)
+     document.write("<p class=\"search-info\">No results.</p>");
+  </script>
+</ul>
