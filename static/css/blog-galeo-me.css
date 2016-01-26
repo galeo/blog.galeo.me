@@ -377,6 +377,10 @@ div.tags-line span.tags-head {
 .tag a {
   color: #404040;
 }
+
+.archive-date {
+  font-family: Menlo, Monaco, Courier, 'DejaVu Sans Mono', monospace;
+}
 /* end of main */
 
 
