@@ -152,7 +152,7 @@ div#search-box-nav {
   float: right;
   width: 240px;
   margin: 0;
-  padding-right: 1em;
+  padding-right: .6em;
 }
 
 form.search-box-bar {
