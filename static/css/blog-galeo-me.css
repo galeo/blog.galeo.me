@@ -193,6 +193,7 @@ input.search-button {
   -moz-border-radius: 2px;
   border-radius: 2px;
   background-color: #139;
+  -webkit-appearance: none;
 }
 /* end of search box */
 
