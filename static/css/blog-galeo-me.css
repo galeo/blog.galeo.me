@@ -175,6 +175,10 @@ input.search-box {
   background-color: #fff;
 }
 
+input.search-box:focus {
+  border-color: #139;
+}
+
 input.search-button {
   font-size: 12px;
   font-weight: bold;
