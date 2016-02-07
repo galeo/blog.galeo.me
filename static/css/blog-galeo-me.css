@@ -568,9 +568,8 @@ pre.src:before {
   right: 4px;
   display: none;
   padding: 3px;
-  border: 1px solid #aaa;
-  background-color: white;
-  color: #139;
+  background-color: #139;
+  color: white;
 }
 
 pre.src:hover:before {
