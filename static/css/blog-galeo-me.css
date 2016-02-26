@@ -170,7 +170,9 @@ input.search-box {
   padding: 4px 6px;
   padding-right: 12px;
   border: 1px solid #bbb;
-  border-color: #bbb;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
   outline: none;
   background-color: #fff;
   -webkit-appearance: none;
