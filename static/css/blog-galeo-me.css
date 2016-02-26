@@ -173,6 +173,7 @@ input.search-box {
   border-color: #bbb;
   outline: none;
   background-color: #fff;
+  -webkit-appearance: none;
 }
 
 input.search-box:focus {
