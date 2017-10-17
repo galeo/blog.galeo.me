@@ -38,6 +38,6 @@ pages_list:
   About: ['/about.html']
   Home ⤶: ['http://galeo.me/']
 
-gems:
+plugins:
   - jekyll-sitemap
   - jekyll-paginate
