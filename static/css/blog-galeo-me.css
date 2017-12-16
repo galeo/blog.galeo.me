@@ -563,7 +563,7 @@ div#text-footnotes .footdef div.footpara {
   padding-left: 30px;
 }
 .figure {
-  padding: 1em;
+  padding: 1em .5em;
 }
 .figure p {
   text-align: center;
