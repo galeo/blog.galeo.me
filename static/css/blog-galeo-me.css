@@ -436,13 +436,11 @@ p.verse {
 pre {
   font-family: Inconsolata, Menlo, Consolas, "Ubunto Mono", Monaco, 'DejaVu Sans Mono';
   font-size: 18px;
-  border: 1px solid #aebdcc;
-  box-shadow: 3px 3px 3px #eee;
-  border-radius: 0;
+  border-radius: 3px;
   overflow: auto;
   line-height: 1.2em;
   color: #333;
-  background-color: #f4f4f4;
+  background-color: #f4f6f7;
 }
 pre.example {
   padding: 8px;
@@ -453,10 +451,11 @@ pre.src {
   line-height: 1.2em;
   position: relative;
   display: block;
-  padding: 8px;
+  padding: 15px;
   padding-top: 1.4em;
 }
 pre.src:before {
+  border-radius: 3px;
   font-size: .9em;
   line-height: 1em;
   position: absolute;
