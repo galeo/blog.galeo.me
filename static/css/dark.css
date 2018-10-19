@@ -1,7 +1,108 @@
 body {
-  color: #fafbfc;
-  background-color: #404040;
+  background-color: #1b1f23;
 }
 .container {
-  color: #fafbfc;
+  color: #c7c7c7;
+}
+::selection {
+  background-color: #005cc5;
+}
+a {
+  color: #2188ff;
+  text-decoration: none;
+}
+a::selection {
+  color: #efefef;
+}
+a:hover {
+  color: #2188ff;
+}
+.header h1.title a {
+  color: #efefef;
+}
+.navbar .navbar-nav li a:hover,
+.navbar .navbar-nav li a:active {
+  color: #c7c7c7;
+}
+div#search-box-nav ::placeholder {
+  color: #6a737d;
+}
+div#search-box-nav input.search-box {
+  color: #c7c7c7;
+  border: 1px solid #343434;
+  background-color: #202020;
+}
+div#search-box-nav input.search-box:focus {
+  border-color: #2188ff;
+}
+div#search-box-nav input.search-button {
+  border: 1px solid #2188ff;
+  background-color: #2188ff;
+}
+.post .post-content a:hover {
+  text-decoration: underline;
+}
+div.post .series {
+  box-shadow: none;
+}
+.main h1,
+.main h2,
+.main h3,
+.main h4 {
+  color: #2188ff;
+}
+.main h1::selection,
+.main h2::selection,
+.main h3::selection,
+.main h4::selection {
+  color: #efefef;
+}
+b {
+  color: #efefef;
+}
+blockquote {
+  color: #a6a5aa;
+  border-left-color: #343434;
+}
+blockquote b {
+  color: #c7c7c7;
+}
+code {
+  background-color: #141414;
+  border: 1px solid #343434;
+  border-radius: 2px;
+}
+kbd {
+  color: #efefef;
+  border: solid 1px #c7c7c7;
+  border-bottom-color: #c7c7c7;
+  background-color: #343434;
+  box-shadow: inset 0 -1px 0 #c7c7c7;
+}
+pre {
+  color: #d7d7d7;
+  background-color: #141414;
+}
+pre::selection {
+  background-color: #005cc5 !important;
+}
+pre::-moz-selection {
+  background: #005cc5;
+  /* Gecko Browsers */
+}
+pre.src span::selection {
+  background-color: #005cc5 !important;
+}
+pre.src span::-moz-selection {
+  background: #005cc5;
+}
+pre.src:before {
+  color: #efefef;
+  background-color: #2188ff;
+}
+.tag {
+  background-color: #343434;
+}
+.tag a {
+  color: #c7c7c7;
 }
