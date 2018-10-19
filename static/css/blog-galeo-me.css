@@ -2,6 +2,10 @@ body {
   font-family: -apple-system, Verdana, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
   margin: 18px auto;
   max-width: 880px;
+}
+.container {
+  margin: 24px auto;
+  padding: 0 16px;
   color: #404040;
 }
 .clear {
@@ -48,8 +52,8 @@ a:hover {
   background-color: #fff;
 }
 .s-css-s--dark-css {
-  color: #fff;
-  background-color: #000;
+  color: #efefef;
+  background-color: #1f2023;
 }
 /* simple-CSS-switch style end */
 code {
@@ -90,11 +94,6 @@ table td {
 }
 table th {
   background: #eee;
-}
-.container {
-  margin: 24px auto;
-  padding: 0 16px;
-  color: #404040;
 }
 /* header */
 .header {
@@ -143,7 +142,6 @@ table th {
   margin-right: 5px;
   padding: 10px;
   text-decoration: none;
-  color: #139;
 }
 .navbar .navbar-nav li a:hover,
 .navbar .navbar-nav li a:active {
@@ -158,14 +156,14 @@ div#search-box-nav {
   margin: 0;
   padding-right: 0.6em;
 }
-form.search-box-bar {
+div#search-box-nav form.search-box-bar {
   font-size: 13px;
   display: block;
   width: 100%;
   margin: 0;
   padding: 6px 2px;
 }
-input.search-box {
+div#search-box-nav input.search-box {
   font-size: 14px;
   width: 66%;
   margin-top: 2px;
@@ -174,15 +172,15 @@ input.search-box {
   border: 1px solid #bbb;
   -webkit-border-radius: 0;
   -moz-border-radius: 0;
-  border-radius: 0;
+  border-radius: 2px;
   outline: none;
   background-color: #fff;
   -webkit-appearance: none;
 }
-input.search-box:focus {
+div#search-box-nav input.search-box:focus {
   border-color: #139;
 }
-input.search-button {
+div#search-box-nav input.search-button {
   font-size: 12px;
   font-weight: bold;
   line-height: 14px;
@@ -194,12 +192,11 @@ input.search-button {
   padding: 2px 0 2px;
   cursor: pointer;
   color: #fff;
-  border: 1px solid #000;
-  border-bottom-width: 0;
+  border: 1px solid #139;
+  background-color: #139;
   -webkit-border-radius: 2px;
   -moz-border-radius: 2px;
   border-radius: 2px;
-  background-color: #139;
   -webkit-appearance: none;
 }
 /* end of search box */
@@ -208,13 +205,9 @@ div.main {
   clear: both;
   margin: 0;
   padding: 10px 0;
-  color: #2f2f2f;
   font-size: 16px;
   font-weight: 400;
   line-height: 1.7;
-}
-.content .post {
-  margin-bottom: 45px;
 }
 div.post,
 div.page {
@@ -222,16 +215,13 @@ div.page {
   padding: 0 2em;
   position: relative;
 }
-div.post span.post-date {
+div.post {
+  margin-bottom: 45px;
+}
+div.post .post-date {
   display: block;
   margin-bottom: 30px;
   color: #a6a5aa;
-}
-div.post span.post-date a {
-  color: #a6a5aa;
-}
-div.post span.post-date a.author {
-  color: #139;
 }
 div.post .series {
   font-size: 95%;
@@ -259,6 +249,9 @@ div.post .series ul {
 div.post div.text div.body {
   padding-left: 5px;
 }
+div.post .post-content a:hover {
+  text-decoration: underline;
+}
 div.related {
   padding: 0 2.2em;
   margin-bottom: 70px;
@@ -271,36 +264,29 @@ div.related ul.related-posts h4 {
   margin: 1em 0;
   padding: 0.1em;
 }
-.content .post h1,
-.content .page h1 {
-  font-size: 180%;
-  line-height: 1.3em;
-}
-.content h1,
-.content h2 {
-  text-transform: capitalize;
-}
-.content h1.post-title,
-.content h1.page-title {
+.main h1,
+.main h2,
+.main h3,
+.main h4 {
   color: #139;
 }
-.content h2 {
+.main h1 {
+  font-size: 180%;
+  line-height: 1.3em;
+  text-transform: capitalize;
+}
+.main h2 {
   font-size: 160%;
   line-height: 1.2em;
   margin-top: 35px;
   padding: 0 0 0.3em;
-  color: #139;
+  text-transform: capitalize;
 }
-.content h3 {
-  color: #139;
+.main h3 {
   font-size: 120%;
 }
-.content h4 {
-  color: #139;
+.main h4 {
   font-size: 110%;
-}
-.content .post .body a {
-  font-style: italic;
 }
 p.read-more-container {
   padding: 5px 0;
@@ -310,7 +296,7 @@ p.read-more-container a.read-more {
   font-weight: bold;
   float: right;
 }
-.post blockquote {
+blockquote {
   margin: 10px 0 10px 19px;
   padding-left: 15px;
   border-left: solid 4px gainsboro;
@@ -481,6 +467,19 @@ pre {
 }
 pre.example {
   padding: 8px;
+}
+pre::selection {
+  background-color: #b2d7ff !important;
+}
+pre::-moz-selection {
+  background: #b2d7ff;
+  /* Gecko Browsers */
+}
+pre.src span::selection {
+  background-color: #b2d7ff !important;
+}
+pre.src span::-moz-selection {
+  background: #b2d7ff;
 }
 pre.src {
   font-family: Inconsolata, Menlo, Consolas, "Ubunto Mono", Monaco, 'DejaVu Sans Mono';
