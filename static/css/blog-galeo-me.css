@@ -15,6 +15,43 @@ a {
 a:hover {
   color: #900;
 }
+/* simple-CSS-switch style */
+#s-css-s--menu {
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+#s-css-s--menu:hover {
+  opacity: 1;
+}
+.s-css-s-button:focus {
+  outline: 0 none;
+}
+.s-css-s--button {
+  display: block;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  margin: 0.2em;
+  padding: 0;
+  color: inherit;
+  background-color: inherit;
+}
+.s-css-s--active-style {
+  border-style: inset;
+}
+.s-css-s--default-css {
+  color: #404040;
+  background-color: #fff;
+}
+.s-css-s--dark-css {
+  color: #fff;
+  background-color: #000;
+}
+/* simple-CSS-switch style end */
 code {
   font-family: Inconsolata, Menlo, Consolas, "Ubunto Mono", Monaco, 'DejaVu Sans Mono';
   font-size: 1.1em;
@@ -42,13 +79,13 @@ kbd {
 }
 table {
   font-size: 100%;
-  margin: .5em 0;
+  margin: 0.5em 0;
   border-collapse: collapse;
 }
 table th,
 table td {
   margin: 2px;
-  padding: .3em;
+  padding: 0.3em;
   border: 1px solid #777;
 }
 table th {
@@ -119,7 +156,7 @@ div#search-box-nav {
   float: right;
   width: 240px;
   margin: 0;
-  padding-right: .6em;
+  padding-right: 0.6em;
 }
 form.search-box-bar {
   font-size: 13px;
@@ -200,7 +237,7 @@ div.post .series {
   font-size: 95%;
   display: inline-block;
   margin-bottom: 1em;
-  padding: .2em .5em;
+  padding: 0.2em 0.5em;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-shadow: 2px 2px 4px #e0e0e0;
@@ -232,7 +269,7 @@ div.related ul.related-posts h4 {
 }
 #table-of-contents {
   margin: 1em 0;
-  padding: .1em;
+  padding: 0.1em;
 }
 .content .post h1,
 .content .page h1 {
@@ -251,7 +288,7 @@ div.related ul.related-posts h4 {
   font-size: 160%;
   line-height: 1.2em;
   margin-top: 35px;
-  padding: 0 0 .3em;
+  padding: 0 0 0.3em;
   color: #139;
 }
 .content h3 {
@@ -282,7 +319,7 @@ p.search-info {
   font-size: 1.1em;
 }
 .verbatim {
-  margin: .5em 0;
+  margin: 0.5em 0;
 }
 .verbatim pre {
   margin: 0;
@@ -290,7 +327,7 @@ p.search-info {
 .verbatim-caption {
   font-size: 80%;
   display: block;
-  padding: .2em;
+  padding: 0.2em;
   border: 1px solid #ccc;
   border-bottom: 0;
   background: #fff;
@@ -428,7 +465,7 @@ a.dsq-brlink {
 #postamble p,
 #preamble p {
   font-size: 90%;
-  margin: .2em;
+  margin: 0.2em;
 }
 p.verse {
   margin-left: 3%;
@@ -456,7 +493,7 @@ pre.src {
 }
 pre.src:before {
   border-radius: 3px;
-  font-size: .9em;
+  font-size: 0.9em;
   line-height: 1em;
   position: absolute;
   top: 4px;
@@ -562,7 +599,7 @@ div#text-footnotes .footdef div.footpara {
   padding-left: 30px;
 }
 .figure {
-  padding: 1em .5em;
+  padding: 1em 0.5em;
 }
 .figure p {
   text-align: center;
