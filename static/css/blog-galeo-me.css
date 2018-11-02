@@ -478,10 +478,10 @@ p.verse {
 }
 pre {
   font-family: Inconsolata, SFMono-Regular, Menlo, Consolas, "Ubunto Mono", Monaco, "Liberation Mono", 'DejaVu Sans Mono';
-  font-size: 18px;
+  font-size: 1.1em;
   border-radius: 3px;
   overflow: auto;
-  line-height: 1.2em;
+  line-height: 1.1em;
   color: #333;
   background-color: #f4f6f7;
 }
@@ -503,11 +503,11 @@ pre.src span::-moz-selection {
 }
 pre.src {
   font-family: Inconsolata, SFMono-Regular, Menlo, Consolas, "Ubunto Mono", Monaco, "Liberation Mono", 'DejaVu Sans Mono';
-  font-size: 18px !important;
-  line-height: 1.2em;
+  font-size: 1.1em !important;
+  line-height: 1.1em;
   position: relative;
   display: block;
-  padding: 15px;
+  padding: 1em;
   padding-top: 1.4em;
 }
 pre.src:before {
