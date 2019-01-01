@@ -629,31 +629,10 @@ div#text-footnotes .footdef div.footpara {
   border: 2px solid gray;
   background: #ffc;
 }
-#org-div-home-and-up {
-  font-size: 70%;
-  text-align: right;
-  white-space: nowrap;
-}
-textarea {
-  overflow-x: auto;
-}
 .linenr {
   font-size: smaller;
 }
 .code-highlighted {
-  background-color: #ff0;
-}
-.org-info-js_info-navigation {
-  border-style: none;
-}
-#org-info-js_console-label {
-  font-size: 10px;
-  font-weight: bold;
-  white-space: nowrap;
-}
-.org-info-js_search-highlight {
-  font-weight: bold;
-  color: #000;
   background-color: #ff0;
 }
 /* end of org highlight */
