@@ -12,7 +12,7 @@ permalink:        none
 # Setup
 title:            "galeo's blog"
 tagline:          In the morning after, you begin to see the light.
-url:              'http://blog.galeo.me'
+url:              'https://blog.galeo.me'
 paginate:         7
 
 baseurl:          /
