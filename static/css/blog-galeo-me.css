@@ -401,6 +401,10 @@ a.dsq-brlink {
   text-align: center;
 }
 /* disqus comments */
+/* utterances comments */
+.utterances {
+  max-width: 780px !important;
+}
 /* footer */
 .footer {
   margin: 60px 2em 0;
