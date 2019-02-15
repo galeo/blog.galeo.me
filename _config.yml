@@ -31,6 +31,9 @@ related:
   excluded_tags:  ['emacs']
   max_number:     3
 
+# Comment service
+comment_service:  'utterances'
+
 pages_list:
   Blog: ['/index.html']
   Archive: ['/archive.html']
