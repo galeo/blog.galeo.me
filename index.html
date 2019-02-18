@@ -20,10 +20,12 @@ title: Blog
         <a href="{{ post.url }}" class="read-more">Keep Reading</a>
       </p>
 
-      <span class="post-date">{{ post.date | date: '%b %d, %Y' }} -
-        <a href="{{ post.url }}#disqus_thread"
-           data-disqus-identifier="{{ site.url }}{{ post.url }}{{ post.commentsID }}"
-           class="comment-link"> Comment</a>
+      <span class="post-date">{{ post.date | date: '%b %d, %Y' }}
+        {% if jekyll.environment == "production" and site.comment_service == 'disqus' -%} -
+          <a href="{{ post.url }}#disqus_thread"
+             data-disqus-identifier="{{ site.url }}{{ post.url }}{{ post.commentsID }}"
+             class="comment-link"> Comment</a>
+        {%- endif %}
       </span>
     </div>
   {% endfor %}
@@ -42,5 +44,7 @@ title: Blog
   {% endif %}
 </div>
 
-<!-- disqus comment count -->
-<script id="dsq-count-scr" src="//galeome.disqus.com/count.js" async></script>
+{% if jekyll.environment == "production" and site.comment_service == 'disqus' %}
+  <!-- disqus comment count -->
+  <script id="dsq-count-scr" src="//galeome.disqus.com/count.js" async></script>
+{% endif %}
