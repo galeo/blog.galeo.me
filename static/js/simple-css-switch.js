@@ -9,7 +9,7 @@ function simpleCssSwitch() {
         var styleOptionButton = document.createElement('button');
         styleOptionButton.setAttribute('title', style.title);
         styleOptionButton.classList.add('s-css-s--button', cssFileAsClass);
-        styleOptionButton.innerText = idx;
+        styleOptionButton.innerText = '';  // idx
         styleOptionButton.addEventListener(
             'click', function(e) {
                 chooseStyle(style.title);
@@ -44,5 +44,4 @@ function simpleCssSwitch() {
             }
         });
     }
-
 }

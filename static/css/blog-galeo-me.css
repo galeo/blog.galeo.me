@@ -14,7 +14,7 @@ body {
   }
 }
 .container {
-  margin: 1.2em auto;
+  margin: 1.4em auto;
   color: #404040;
 }
 .clear {
@@ -46,18 +46,19 @@ a:hover {
   display: block;
   width: 30px;
   height: 30px;
-  line-height: 30px;
   text-align: center;
   margin: 0.2em;
   padding: 0;
-  color: inherit;
-  background-color: inherit;
+  float: left;
+  border: 3px;
+}
+.s-css-s--default-css {
+  color: #d0d0d0;
 }
 .s-css-s--active-style {
   border-style: inset;
 }
-.s-css-s--default-css {
-  color: #404040;
+.s-css-s--active-style.s-css-s--default-css {
   background-color: #fff;
 }
 .s-css-s--dark-css {
