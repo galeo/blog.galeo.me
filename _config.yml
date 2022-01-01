@@ -17,9 +17,9 @@ paginate:         7
 
 baseurl:          /
 author:
-  name:           Moogen Tian
+  name:           Yuwei Tian
   url:            https://github.com/galeo
-  email:          moogentian[at]gmail.com
+  email:          ibluefocus@NOSPAM.gmail.com
 
 # Content
 excerpt_separator: "</p>"
@@ -39,7 +39,7 @@ pages_list:
   Archive: ['/archive.html']
   Tags: ['/tags.html']
   About: ['/about.html']
-  Home ⤶: ['http://galeo.me/']
+  Home ⤶: ['https://galeo.me/']
 
 plugins:
   - jekyll-sitemap
