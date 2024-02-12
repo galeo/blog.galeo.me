@@ -38,7 +38,7 @@ pages_list:
   Archive: ['/archive.html']
   Tags: ['/tags.html']
   About: ['/about.html']
-  Home ⤶: ['https://galeo.me/']
+  Home ⤶: ['https://blog.galeo.me/']
 
 plugins:
   - jekyll-sitemap
